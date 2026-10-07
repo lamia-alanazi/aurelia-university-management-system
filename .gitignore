@@ -1,0 +1,45 @@
+# Visual Studio and build output
+.vs/
+[Bb]in/
+[Oo]bj/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+[Tt]est[Rr]esults/
+*.log
+
+# Restorable NuGet packages; keep packages.config
+packages/
+
+# Database files and backups
+*.bak
+*.mdf
+*.ldf
+*.ndf
+*.bacpac
+
+# Local secrets and deployment credentials
+.env
+.env.*
+!.env.example
+*.pfx
+*.p12
+*.key
+*.pubxml
+*.pubxml.user
+[Pp]ublishProfiles/
+Web.local.config
+connectionStrings.local.config
+appsettings.*.local.json
+
+# OS files and original archives
+.DS_Store
+Thumbs.db
+*.rar
+*.zip
+
+# Keep Web.config, Views/Web.config, migrations and packages.config.
+# Personal data embedded in source requires review; gitignore cannot remove it.
+compressed/
+original-videos/

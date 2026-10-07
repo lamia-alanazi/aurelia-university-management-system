@@ -1,0 +1,425 @@
+﻿@model lamia12771.Models.AdminLoginViewModel
+
+@{
+    ViewBag.Title = "Admin Login";
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+
+    <meta charset="utf-8" />
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0" />
+
+    <title>Admin Login - Aurelia University</title>
+
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
+
+        html,
+        body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            min-height: 100%;
+            background: #f7f7f5;
+            font-family: Arial, Helvetica, sans-serif;
+            color: #1B1F23;
+        }
+
+
+        body {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 30px;
+        }
+
+
+        .login-page {
+            width: 100%;
+            max-width: 960px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            min-height: 560px;
+            background: #ffffff;
+            border: 1px solid #dedede;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.07);
+        }
+
+
+        /* =============================================
+           BRAND
+        ============================================= */
+
+        .login-brand {
+            background: #1B1F23;
+            padding: 55px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+
+        .login-logo {
+            width: 56px;
+            height: 56px;
+            object-fit: contain;
+        }
+
+
+        .login-brand-content {
+            margin-top: auto;
+            margin-bottom: auto;
+        }
+
+
+        .login-eyebrow {
+            margin-bottom: 18px;
+            color: rgba(255,255,255,0.65);
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 2.2px;
+            text-transform: uppercase;
+        }
+
+
+        .login-brand h1 {
+            margin: 0;
+            color: #ffffff;
+            font-family: Georgia, "Times New Roman", serif;
+            font-size: 46px;
+            font-weight: 400;
+            line-height: 1.05;
+        }
+
+
+        .login-brand p {
+            max-width: 340px;
+            margin-top: 22px;
+            color: rgba(255,255,255,0.7);
+            font-size: 14px;
+            line-height: 1.8;
+        }
+
+
+        /* =============================================
+           FORM
+        ============================================= */
+
+        .login-form-side {
+            padding: 70px 65px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+
+        .form-eyebrow {
+            margin-bottom: 12px;
+            color: #777;
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+
+        .login-form-side h2 {
+            margin: 0 0 12px 0;
+            font-family: Georgia, "Times New Roman", serif;
+            font-size: 38px;
+            font-weight: 400;
+            color: #17191b;
+        }
+
+
+        .login-description {
+            margin: 0 0 35px 0;
+            color: #777;
+            font-size: 13px;
+            line-height: 1.7;
+        }
+
+
+        .form-group {
+            margin-bottom: 22px;
+        }
+
+
+            .form-group label {
+                display: block;
+                margin-bottom: 8px;
+                color: #303438;
+                font-size: 11px;
+                font-weight: 600;
+                letter-spacing: 1px;
+                text-transform: uppercase;
+            }
+
+
+        .form-control {
+            width: 100%;
+            height: 48px;
+            padding: 0 14px;
+            border: 1px solid #d7d9da;
+            background: #ffffff;
+            color: #17191b;
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+
+            .form-control:focus {
+                border-color: #1B1F23;
+                box-shadow: 0 0 0 2px rgba(27,31,35,0.06);
+            }
+
+
+        .validation-summary-errors,
+        .field-validation-error {
+            color: #8e2b2b;
+            font-size: 12px;
+        }
+
+
+            .validation-summary-errors ul {
+                margin: 0 0 20px 0;
+                padding-left: 18px;
+            }
+
+
+        .login-button {
+            width: 100%;
+            height: 50px;
+            margin-top: 8px;
+            border: none;
+            background: #1B1F23;
+            color: #ffffff;
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 1.2px;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: background 0.25s ease, transform 0.2s ease;
+        }
+
+
+            .login-button:hover {
+                background: #30353a;
+            }
+
+
+            .login-button:active {
+                transform: translateY(1px);
+            }
+
+
+        .back-link {
+            display: inline-block;
+            margin-top: 24px;
+            color: #777;
+            font-size: 12px;
+            text-decoration: none;
+        }
+
+
+            .back-link:hover {
+                color: #1B1F23;
+            }
+
+
+        @@media (max-width: 800px) {
+
+            body {
+                padding: 0;
+            }
+
+
+            .login-page {
+                grid-template-columns: 1fr;
+                min-height: 100vh;
+                border: none;
+            }
+
+
+            .login-brand {
+                min-height: 250px;
+                padding: 35px;
+            }
+
+
+                .login-brand h1 {
+                    font-size: 34px;
+                }
+
+
+            .login-form-side {
+                padding: 45px 30px;
+            }
+        }
+    </style>
+
+</head>
+
+
+<body>
+
+
+    <div class="login-page">
+
+
+        <section class="login-brand">
+
+            <img src="@Url.Content("~/images/aurelia-symbol-white.png")"
+                 alt=""
+                 class="login-logo" />
+
+
+            <div class="login-brand-content">
+
+                <div class="login-eyebrow">
+                    Aurelia University
+                </div>
+
+                <h1>
+                    Administration<br />
+                    Portal
+                </h1>
+
+                <p>
+                    Secure access for authorized administrators
+                    responsible for managing university records,
+                    courses, faculty, students and facilities.
+                </p>
+
+            </div>
+
+        </section>
+
+
+
+        <section class="login-form-side">
+
+
+            <div class="form-eyebrow">
+                Administrator Access
+            </div>
+
+
+            <h2>Welcome Back</h2>
+
+
+            <p class="login-description">
+                Enter your administrator credentials to continue.
+            </p>
+
+
+            @using (Html.BeginForm(
+                "Login",
+                "Admin",
+                FormMethod.Post,
+                new { autocomplete = "off" }
+            ))
+            {
+
+                @Html.AntiForgeryToken()
+
+
+                @Html.ValidationSummary(
+                    true,
+                    ""
+                )
+
+
+                <div class="form-group">
+
+
+                    @Html.LabelFor(
+                        model => model.Username
+                    )
+
+
+                    @Html.TextBoxFor(
+                        model => model.Username,
+                        new
+                        {
+                            @class = "form-control",
+                            autocomplete = "username"
+                        }
+                    )
+
+
+                    @Html.ValidationMessageFor(
+                        model => model.Username
+                    )
+
+
+                </div>
+
+
+
+                <div class="form-group">
+
+
+                    @Html.LabelFor(
+                        model => model.Password
+                    )
+
+
+                    @Html.PasswordFor(
+                        model => model.Password,
+                        new
+                        {
+                            @class = "form-control",
+                            autocomplete = "current-password"
+                        }
+                    )
+
+
+                    @Html.ValidationMessageFor(
+                        model => model.Password
+                    )
+
+
+                </div>
+
+
+
+                <button type="submit"
+                        class="login-button">
+
+                    Sign In
+
+                </button>
+
+            }
+
+
+            <a href="@Url.Action("Index", "Home")"
+               class="back-link">
+
+                ← Return to university website
+
+            </a>
+
+
+        </section>
+
+
+    </div>
+
+
+</body>
+
+</html>

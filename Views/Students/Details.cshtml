@@ -1,0 +1,70 @@
+﻿@model lamia12771.Models.Student
+
+@{
+    ViewBag.Title = "Student Details";
+}
+
+<div class="container">
+
+    <div class="row">
+        <div class="col-md-8 col-md-offset-2">
+
+            <h2>Student Details</h2>
+            <p>View the student's information below.</p>
+
+            <hr />
+
+            <div class="panel panel-default">
+
+                <div class="panel-heading">
+                    <strong>Student Information</strong>
+                </div>
+
+                <div class="panel-body">
+
+                    <dl class="dl-horizontal">
+
+                        <dt>
+                            @Html.DisplayNameFor(model => model.Name)
+                        </dt>
+
+                        <dd>
+                            @Html.DisplayFor(model => model.Name)
+                        </dd>
+
+                        <dt>
+                            @Html.DisplayNameFor(model => model.Age)
+                        </dt>
+
+                        <dd>
+                            @Html.DisplayFor(model => model.Age)
+                        </dd>
+
+                    </dl>
+
+                </div>
+
+            </div>
+
+            <p>
+                @Html.ActionLink(
+                    "Edit Student",
+                    "Edit",
+                    "Students",
+                    new { id = Model.StudentId },
+                    new { @class = "btn btn-warning" }
+                )
+
+                @Html.ActionLink(
+                    "Back to Students",
+                    "Index",
+                    "Students",
+                    null,
+                    new { @class = "btn btn-default" }
+                )
+            </p>
+
+        </div>
+    </div>
+
+</div>

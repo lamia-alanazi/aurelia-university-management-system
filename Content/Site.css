@@ -1,0 +1,131 @@
+﻿body {
+    padding-top: 0;
+    padding-bottom: 0;
+    margin: 0;
+}
+
+/* Main content */
+.body-content {
+    padding-left: 0;
+    padding-right: 0;
+    margin: 0;
+    width: 100%;
+    background-color: #111315 !important;
+    color: #ffffff;
+    min-height: 100vh;
+}
+
+/* Bootstrap container */
+.container {
+    background-color: transparent;
+}
+
+
+/* Headings */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    color: #ffffff;
+}
+
+/* Normal text */
+p,
+label,
+dt,
+dd {
+    color: #c7c7c7;
+}
+
+/* Muted text */
+.text-muted {
+    color: #8e9498 !important;
+}
+
+/* Horizontal line */
+hr {
+    border-top: 1px solid #3a3e42;
+}
+
+/* Tables */
+.table {
+    background-color: #171a1d;
+    color: #d7d7d7;
+}
+
+    .table > thead > tr > th {
+        background-color: #1d2024;
+        color: #ffffff;
+        border-color: #3a3e42;
+    }
+
+    .table > tbody > tr > td {
+        background-color: #171a1d;
+        color: #d7d7d7;
+        border-color: #34383c;
+    }
+
+.table-bordered {
+    border-color: #3a3e42;
+}
+
+    .table-bordered > thead > tr > th,
+    .table-bordered > tbody > tr > td {
+        border-color: #3a3e42;
+    }
+
+/* Panels */
+.panel {
+    background-color: #171a1d;
+    border-color: #34383c;
+    color: #d7d7d7;
+}
+
+.panel-body {
+    background-color: #171a1d;
+    color: #d7d7d7;
+}
+
+.panel-heading {
+    border-color: #34383c;
+}
+
+/* Forms */
+.form-control {
+    background-color: #1b1e21;
+    color: #ffffff;
+    border: 1px solid #3b4045;
+}
+
+    .form-control:focus {
+        border-color: #6d7378;
+        box-shadow: none;
+    }
+
+input,
+select,
+textarea {
+    max-width: 280px;
+}
+
+/* Links */
+a {
+    color: #bfc5c9;
+}
+
+    a:hover,
+    a:focus {
+        color: #ffffff;
+    }
+
+/* Description lists */
+.dl-horizontal dt {
+    white-space: normal;
+}
+
+/* Footer from default Layout */
+footer {
+    color: #8e9498;
+}

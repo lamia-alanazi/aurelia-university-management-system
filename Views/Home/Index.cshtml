@@ -1,0 +1,1563 @@
+﻿@{ ViewBag.Title = "Home";
+                var videoVersion = "3"; }
+
+<style>
+
+    .home-page-wrapper {
+        width: 100%;
+        background-color: #ffffff;
+        color: #111111;
+        font-family: 'Times New Roman', serif;
+        margin: 0;
+        padding: 0;
+    }
+
+
+    /* =========================
+       HERO SECTION
+       ========================= */
+
+    .home-hero {
+        position: relative;
+        width: 100%;
+        height: 620px;
+        margin: 0;
+        background-image: url('/images/home.png');
+        background-size: cover;
+        background-position: center 42%;
+        background-repeat: no-repeat;
+        overflow: hidden;
+    }
+
+        .home-hero::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: rgba(20, 16, 12, 0.46);
+        }
+
+    .hero-content {
+        position: relative;
+        z-index: 2;
+        width: 84%;
+        max-width: 1180px;
+        height: 100%;
+        margin: 0 auto;
+        display: flex;
+        align-items: center;
+        justify-content: flex-start;
+        text-align: left;
+    }
+
+    .hero-text-box {
+        max-width: 470px;
+        margin-top: -15px;
+    }
+
+    .hero-tag {
+        margin-bottom: 14px;
+        font-family: Arial, sans-serif;
+        font-size: 10px;
+        font-weight: 500;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        color: rgba(255, 255, 255, 0.80);
+    }
+
+    .hero-title {
+        margin: 0 0 18px;
+        color: #ffffff;
+        font-family: 'Times New Roman', serif;
+        font-size: 52px;
+        font-weight: 400;
+        line-height: 1.07;
+    }
+
+    .hero-description {
+        max-width: 350px;
+        margin: 0 0 24px;
+        font-family: Arial, sans-serif;
+        font-size: 12px;
+        line-height: 1.8;
+        color: rgba(255, 255, 255, 0.88);
+    }
+
+
+    /* =========================
+       HERO BUTTON
+       ========================= */
+
+    .hero-button,
+    .hero-button:visited {
+        display: inline-block;
+        padding: 12px 21px;
+        background-color: #353A3F !important;
+        border: 1px solid #353A3F !important;
+        color: #ffffff !important;
+        font-family: Arial, sans-serif;
+        font-size: 10px;
+        font-weight: 500;
+        letter-spacing: 0.8px;
+        text-transform: uppercase;
+        text-decoration: none !important;
+        transition: background-color 0.25s ease, border-color 0.25s ease, transform 0.25s ease;
+    }
+
+        .hero-button:hover,
+        .hero-button:focus,
+        .hero-button:active {
+            background-color: #292E32 !important;
+            border-color: #292E32 !important;
+            color: #ffffff !important;
+            text-decoration: none !important;
+            transform: translateY(-2px);
+            outline: none !important;
+            box-shadow: none !important;
+        }
+
+
+    /* =========================
+       UNIVERSITY INTRO + STATS
+       ========================= */
+
+    .university-intro {
+        position: relative;
+        z-index: 5;
+        width: 100%;
+        background-color: #ffffff;
+        padding: 0 0 26px;
+    }
+
+    .university-intro-content {
+        position: relative;
+        z-index: 6;
+        width: 92%;
+        max-width: 1450px;
+        margin: 0 auto;
+        top: -45px;
+        padding: 28px 34px 12px;
+        background-color: #ffffff;
+        border-radius: 18px 18px 0 0;
+        display: grid;
+        grid-template-columns: 1.65fr repeat(4, 0.85fr);
+        align-items: stretch;
+        box-sizing: border-box;
+    }
+
+    .university-about {
+        padding: 6px 30px 6px 0;
+    }
+
+        .university-about h2 {
+            margin: 0 0 9px;
+            font-size: 31px;
+            font-weight: 400;
+            color: #171717;
+        }
+
+    .university-about-line {
+        width: 32px;
+        height: 2px;
+        margin-bottom: 11px;
+        background: #3E4348;
+    }
+
+    .university-about p {
+        max-width: 320px;
+        margin: 0 0 6px;
+        font-family: Arial, sans-serif;
+        font-size: 10px;
+        line-height: 1.55;
+        color: #666666;
+    }
+
+    .university-stat {
+        min-height: 125px;
+        padding: 8px 14px;
+        border-left: 1px solid #e2ddd6;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: flex-start;
+    }
+
+    .stat-icon {
+        width: 29px;
+        height: 29px;
+        margin-bottom: 8px;
+        color: #3E4348;
+    }
+
+        .stat-icon svg {
+            width: 100%;
+            height: 100%;
+            stroke: currentColor;
+            stroke-width: 2;
+            fill: none;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            display: block;
+        }
+
+    .stat-number {
+        margin-bottom: 7px;
+        font-size: 31px;
+        font-weight: 400;
+        line-height: 1;
+        color: #171717;
+        white-space: nowrap;
+    }
+
+    .stat-title {
+        max-width: 125px;
+        font-family: Arial, sans-serif;
+        font-size: 9px;
+        line-height: 1.4;
+        color: #666666;
+        text-transform: uppercase;
+        letter-spacing: 0.6px;
+    }
+
+
+    /* =========================
+       ACADEMIC PROGRAMS
+       ========================= */
+
+    .programs-section {
+        position: relative;
+        width: 100%;
+        min-height: 520px;
+        background-color: #ffffff;
+        overflow: hidden;
+        padding: 40px 0 60px;
+    }
+
+    .programs-inner {
+        position: relative;
+        width: 90%;
+        max-width: 1320px;
+        margin: 0 auto;
+    }
+
+    .programs-heading {
+        margin-bottom: 28px;
+    }
+
+        .programs-heading .dot {
+            display: inline-block;
+            width: 13px;
+            height: 13px;
+            margin-right: 8px;
+            background: #3E4348;
+            border-radius: 50%;
+        }
+
+        .programs-heading h2 {
+            display: inline-block;
+            margin: 0;
+            font-size: 34px;
+            font-weight: 400;
+            color: #111111;
+        }
+
+        .programs-heading p {
+            margin-top: 8px;
+            font-family: Arial, sans-serif;
+            font-size: 12px;
+            color: #666666;
+        }
+
+
+    /* =========================
+       PROGRAM SLIDER
+       ========================= */
+
+    .programs-slider {
+        position: relative;
+        display: grid;
+        grid-template-columns: 145px 1fr 145px;
+        align-items: center;
+        gap: 0;
+    }
+
+
+    /* =========================
+       SIDE VIDEOS
+       ========================= */
+
+    .program-side {
+        position: relative;
+        height: 250px;
+        overflow: hidden;
+        background: #111315;
+        opacity: 0.70;
+        transition: opacity 0.3s ease, transform 0.3s ease;
+        z-index: 2;
+    }
+
+        .program-side:hover {
+            opacity: 0.95;
+            transform: scale(1.02);
+            z-index: 4;
+        }
+
+        .program-side video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: center;
+            display: block;
+            filter: brightness(0.55);
+        }
+
+    .program-side-label {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        writing-mode: vertical-rl;
+        transform: rotate(180deg);
+        font-size: 18px;
+        letter-spacing: 1px;
+        color: #ffffff;
+        background: rgba(0, 0, 0, 0.18);
+    }
+
+
+    /* =========================
+       MAIN PROGRAM CARD
+       ========================= */
+
+    .program-main {
+        display: grid;
+        /* رجعنا الحجم والعرض مثل التصميم الأصلي */
+        grid-template-columns: 1.05fr 1fr;
+        height: 330px;
+        min-height: 330px;
+        background: #eeeeec;
+        border: 1px solid #d1d4d6;
+        box-shadow: 0 18px 45px rgba(62, 67, 72, 0.18);
+        overflow: hidden;
+        z-index: 3;
+    }
+
+
+    /* =========================
+       MAIN VIDEO
+       ========================= */
+
+    .program-media {
+        width: 100%;
+        height: 330px;
+        min-height: 330px;
+        overflow: hidden;
+        background: #111315;
+    }
+
+    .program-video-main {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        object-position: center;
+        display: block;
+        background: #111315;
+    }
+
+
+    /* =========================
+       PROGRAM INFORMATION
+       ========================= */
+
+    .program-info {
+        height: 330px;
+        padding: 26px 32px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        background: #eeeeec;
+        color: #000000;
+        box-sizing: border-box;
+    }
+
+    .program-category {
+        margin-bottom: 7px;
+        font-family: Arial, sans-serif;
+        font-size: 10px;
+        color: #000000;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+    }
+
+    .program-info h3 {
+        margin: 0 0 8px;
+        font-size: 29px;
+        font-weight: 400;
+        color: #000000;
+    }
+
+    .program-info h4 {
+        margin: 0 0 12px;
+        font-family: Arial, sans-serif;
+        font-size: 12px;
+        font-weight: normal;
+        color: #000000;
+        letter-spacing: 1px;
+    }
+
+    .program-info p {
+        max-width: 430px;
+        margin: 0 0 8px;
+        font-family: Arial, sans-serif;
+        font-size: 12px;
+        line-height: 1.65;
+        color: #000000;
+    }
+
+
+    /* =========================
+       CONTROLS
+       ========================= */
+
+    .program-controls {
+        margin-top: 8px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .program-arrow {
+        padding: 4px 8px;
+        border: 0;
+        background: transparent;
+        color: #000000;
+        font-size: 30px;
+        cursor: pointer;
+        opacity: 0.72;
+        transition: opacity 0.2s ease, transform 0.2s ease;
+    }
+
+        .program-arrow:hover {
+            opacity: 1;
+            transform: scale(1.10);
+        }
+
+    .program-number {
+        font-size: 20px;
+        color: #000000;
+        letter-spacing: 2px;
+    }
+
+
+    /* =========================
+       FOOTER
+       ========================= */
+
+    .university-footer {
+        width: 100%;
+        background: #eeeeec;
+        color: #111111;
+        padding: 62px 0 25px;
+        border-top: 1px solid #d1d4d6;
+    }
+
+    .footer-content {
+        width: 86%;
+        max-width: 1250px;
+        margin: 0 auto;
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 65px;
+        align-items: start;
+    }
+
+    .footer-column h4 {
+        margin: 0 0 20px;
+        color: #111111;
+        font-family: Arial, sans-serif;
+        font-size: 14px;
+        font-weight: 600;
+        letter-spacing: 0.5px;
+    }
+
+    .footer-column ul {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+    }
+
+    .footer-column li {
+        margin-bottom: 12px;
+    }
+
+        .footer-column li span {
+            font-family: Arial, sans-serif;
+            font-size: 11px;
+            line-height: 1.7;
+            color: #333333;
+        }
+
+    .footer-label {
+        display: block;
+        margin-bottom: 3px;
+        font-family: Arial, sans-serif;
+        font-size: 11px;
+        font-weight: 600;
+        color: #111111;
+    }
+
+    .footer-value {
+        display: block;
+        margin-bottom: 14px;
+        font-family: Arial, sans-serif;
+        font-size: 11px;
+        line-height: 1.7;
+        color: #444444;
+    }
+
+
+    /* =========================
+       FOOTER LINKS
+       ========================= */
+
+    .developer-links {
+        margin-top: 20px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-family: Arial, sans-serif;
+        font-size: 11px;
+    }
+
+        .developer-links a {
+            color: #111111;
+            text-decoration: none;
+        }
+
+            .developer-links a:hover {
+                color: #3E4348;
+                text-decoration: underline;
+            }
+
+        .developer-links span {
+            color: #777777;
+        }
+
+
+    /* =========================
+       FOOTER BOTTOM
+       ========================= */
+
+    .footer-bottom {
+        width: 86%;
+        max-width: 1250px;
+        margin: 45px auto 0;
+        padding-top: 18px;
+        border-top: 1px solid #d1d4d6;
+        text-align: center;
+        font-family: Arial, sans-serif;
+        font-size: 9px;
+        color: #555555;
+    }
+
+
+    /* =========================
+       RESPONSIVE
+       ========================= */
+
+    @@media (max-width: 1200px) {
+
+        .home-hero {
+            height: 570px;
+        }
+
+        .hero-content {
+            width: 88%;
+        }
+
+        .hero-title {
+            font-size: 47px;
+        }
+
+        .university-intro-content {
+            width: 92%;
+            max-width: 1280px;
+            top: -40px;
+            padding: 26px 28px 10px;
+            border-radius: 17px 17px 0 0;
+        }
+
+        .programs-inner {
+            width: 94%;
+        }
+
+        .programs-slider {
+            grid-template-columns: 120px 1fr 120px;
+        }
+
+        .footer-content {
+            width: 90%;
+            gap: 35px;
+        }
+    }
+
+
+    @@media (max-width: 1000px) {
+
+        .university-intro-content {
+            width: 92%;
+            top: -34px;
+            grid-template-columns: repeat(2, 1fr);
+            padding: 24px 24px 10px;
+            border-radius: 16px 16px 0 0;
+        }
+
+        .university-about {
+            grid-column: 1 / -1;
+            padding-right: 0;
+            padding-bottom: 20px;
+        }
+
+        .university-stat {
+            min-height: 110px;
+            border-top: 1px solid #e2ddd6;
+        }
+    }
+
+
+    @@media (max-width: 900px) {
+
+        .home-hero {
+            height: 520px;
+        }
+
+        .hero-text-box {
+            max-width: 400px;
+        }
+
+        .hero-title {
+            font-size: 42px;
+        }
+
+        .programs-slider {
+            grid-template-columns: 1fr;
+        }
+
+        .program-side {
+            display: none;
+        }
+
+        .program-main {
+            grid-template-columns: 1fr;
+            height: auto;
+            min-height: 0;
+        }
+
+        .program-media {
+            height: 280px;
+            min-height: 280px;
+        }
+
+        .program-info {
+            height: auto;
+            min-height: 280px;
+            padding: 28px;
+        }
+
+        .footer-content {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+
+
+    @@media (max-width: 768px) {
+
+        .home-hero {
+            height: 500px;
+            background-position: center;
+        }
+
+        .hero-content {
+            width: 88%;
+        }
+
+        .hero-text-box {
+            max-width: 350px;
+            margin-top: 0;
+        }
+
+        .hero-title {
+            font-size: 38px;
+        }
+
+        .hero-description {
+            font-size: 11px;
+        }
+
+        .hero-button {
+            padding: 11px 18px;
+            font-size: 9px;
+        }
+
+        .university-intro-content {
+            width: 94%;
+            top: -28px;
+            padding: 22px 20px 8px;
+            border-radius: 15px 15px 0 0;
+        }
+
+        .programs-inner {
+            width: 92%;
+        }
+
+        .programs-heading h2 {
+            font-size: 28px;
+        }
+
+        .program-info h3 {
+            font-size: 27px;
+        }
+    }
+
+
+    @@media (max-width: 600px) {
+
+        .home-hero {
+            height: 470px;
+        }
+
+        .hero-title {
+            font-size: 34px;
+        }
+
+        .hero-tag {
+            font-size: 9px;
+        }
+
+        .university-intro-content {
+            width: 95%;
+            top: -20px;
+            grid-template-columns: 1fr;
+            border-radius: 14px 14px 0 0;
+        }
+
+        .university-stat {
+            min-height: auto;
+            padding: 18px 5px;
+            border-left: 0;
+            border-top: 1px solid #e2ddd6;
+        }
+
+        .stat-number {
+            font-size: 29px;
+        }
+
+        .program-media {
+            height: 260px;
+            min-height: 260px;
+        }
+
+        .program-info {
+            padding: 24px 22px;
+        }
+
+        .footer-content {
+            grid-template-columns: 1fr;
+        }
+
+        .university-footer {
+            padding-top: 45px;
+        }
+    }
+</style>
+
+
+<div class="home-page-wrapper">
+
+    <!-- HERO -->
+
+    <div class="home-hero">
+
+        <div class="hero-content">
+
+            <div class="hero-text-box">
+
+                <div class="hero-tag">
+                    Aurelia University
+                </div>
+
+                <h1 class="hero-title">
+                    Empowering Education,<br />
+                    Enriching Futures.
+                </h1>
+
+                <p class="hero-description">
+                    One integrated system for students, teachers,
+                    courses, and campus facilities.
+                </p>
+
+                <a href="#university-intro"
+                   class="hero-button">
+                    Explore More &nbsp; →
+                </a>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- UNIVERSITY INTRO + STATS -->
+
+    <section class="university-intro"
+             id="university-intro">
+
+        <div class="university-intro-content">
+
+            <div class="university-about">
+
+                <h2>
+                    Aurelia University
+                </h2>
+
+                <div class="university-about-line"></div>
+
+                <p>
+                    Aurelia University provides a modern academic environment
+                    designed to support students, teachers, courses,
+                    and campus facilities through one integrated
+                    management system.
+                </p>
+
+                <p>
+                    Our goal is to provide an organized and professional
+                    platform that makes university management simple,
+                    clear, and efficient.
+                </p>
+
+            </div>
+
+
+            <!-- STAT 1 -->
+
+            <div class="university-stat">
+
+                <div class="stat-icon">
+
+                    <svg viewBox="0 0 24 24">
+
+                        <rect x="3"
+                              y="15"
+                              width="4"
+                              height="6"
+                              fill="currentColor"
+                              stroke="none">
+                        </rect>
+
+                        <rect x="9"
+                              y="11"
+                              width="4"
+                              height="10"
+                              fill="currentColor"
+                              stroke="none">
+                        </rect>
+
+                        <rect x="15"
+                              y="7"
+                              width="4"
+                              height="14"
+                              fill="currentColor"
+                              stroke="none">
+                        </rect>
+
+                        <path d="M4 11L9 7L13 9L20 3"></path>
+                        <path d="M16 3H20V7"></path>
+
+                    </svg>
+
+                </div>
+
+                <div class="stat-number">
+                    18+
+                </div>
+
+                <div class="stat-title">
+                    Years of Excellence
+                </div>
+
+            </div>
+
+
+            <!-- STAT 2 -->
+
+            <div class="university-stat">
+
+                <div class="stat-icon">
+
+                    <svg viewBox="0 0 24 24">
+
+                        <rect x="4"
+                              y="4"
+                              width="16"
+                              height="10"
+                              rx="1.5">
+                        </rect>
+
+                        <path d="M8 14L6 20"></path>
+                        <path d="M16 14L18 20"></path>
+                        <path d="M9 18H15"></path>
+                        <path d="M11 7V9L9 12H15L13 9V7"></path>
+
+                    </svg>
+
+                </div>
+
+                <div class="stat-number">
+                    42
+                </div>
+
+                <div class="stat-title">
+                    Classrooms &amp; Labs
+                </div>
+
+            </div>
+
+
+            <!-- STAT 3 -->
+
+            <div class="university-stat">
+
+                <div class="stat-icon campus-icon">
+
+                    <svg viewBox="0 0 24 24">
+
+                        <path d="M3 8L12 3L21 8Z"
+                              fill="currentColor"
+                              stroke="currentColor">
+                        </path>
+
+                        <circle cx="12"
+                                cy="6"
+                                r="1"
+                                fill="#ffffff"
+                                stroke="none">
+                        </circle>
+
+                        <rect x="5"
+                              y="9"
+                              width="2"
+                              height="9"
+                              fill="currentColor"
+                              stroke="none">
+                        </rect>
+
+                        <rect x="9"
+                              y="9"
+                              width="2"
+                              height="9"
+                              fill="currentColor"
+                              stroke="none">
+                        </rect>
+
+                        <rect x="13"
+                              y="9"
+                              width="2"
+                              height="9"
+                              fill="currentColor"
+                              stroke="none">
+                        </rect>
+
+                        <rect x="17"
+                              y="9"
+                              width="2"
+                              height="9"
+                              fill="currentColor"
+                              stroke="none">
+                        </rect>
+
+                        <rect x="4"
+                              y="18"
+                              width="16"
+                              height="2"
+                              fill="currentColor"
+                              stroke="none">
+                        </rect>
+
+                        <rect x="3"
+                              y="21"
+                              width="18"
+                              height="1.5"
+                              fill="currentColor"
+                              stroke="none">
+                        </rect>
+
+                    </svg>
+
+                </div>
+
+                <div class="stat-number">
+                    1.2M m²
+                </div>
+
+                <div class="stat-title">
+                    Campus Area
+                </div>
+
+            </div>
+
+
+            <!-- STAT 4 -->
+
+            <div class="university-stat">
+
+                <div class="stat-icon">
+
+                    <svg viewBox="0 0 24 24">
+
+                        <circle cx="12"
+                                cy="7"
+                                r="3"
+                                fill="currentColor"
+                                stroke="none">
+                        </circle>
+
+                        <path d="M6.5 20C7 15.5 9 13 12 13C15 13 17 15.5 17.5 20Z"
+                              fill="currentColor"
+                              stroke="none">
+                        </path>
+
+                        <circle cx="5"
+                                cy="9"
+                                r="2"
+                                fill="currentColor"
+                                stroke="none"
+                                opacity="0.45">
+                        </circle>
+
+                        <path d="M1.5 19C2 15.5 3.3 13.5 5.3 13.5C6.4 13.5 7.3 14 8 15"
+                              stroke="currentColor"
+                              opacity="0.45">
+                        </path>
+
+                        <circle cx="19"
+                                cy="9"
+                                r="2"
+                                fill="currentColor"
+                                stroke="none"
+                                opacity="0.45">
+                        </circle>
+
+                        <path d="M22.5 19C22 15.5 20.7 13.5 18.7 13.5C17.6 13.5 16.7 14 16 15"
+                              stroke="currentColor"
+                              opacity="0.45">
+                        </path>
+
+                    </svg>
+
+                </div>
+
+                <div class="stat-number">
+                    25+
+                </div>
+
+                <div class="stat-title">
+                    Faculty Members
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- ACADEMIC PROGRAMS -->
+
+    <section class="programs-section">
+
+        <div class="programs-inner">
+
+            <div class="programs-heading">
+
+                <span class="dot"></span>
+
+                <h2>
+                    Academic Programs.
+                </h2>
+
+                <p>
+                    Explore the academic majors available at Aurelia University.
+                </p>
+
+            </div>
+
+
+            <div class="programs-slider">
+
+
+                <!-- LEFT PREVIEW -->
+
+                <div class="program-side">
+
+                    <video id="leftPreviewVideo"
+                           autoplay
+                           muted
+                           loop
+                           playsinline
+                           preload="auto">
+
+                        <source id="leftVideo"
+                                src="/images/biology.mp4?v=@videoVersion"
+                                type="video/mp4" />
+
+                    </video>
+
+                    <div class="program-side-label"
+                         id="leftLabel">
+                        Biology
+                    </div>
+
+                </div>
+
+
+                <!-- MAIN CARD -->
+
+                <div class="program-main">
+
+
+                    <!-- VIDEO -->
+
+                    <div class="program-media">
+
+                        <!-- Main video -->
+
+                        <video id="mainVideo"
+                               class="program-video-main"
+                               autoplay
+                               muted
+                               loop
+                               playsinline
+                               preload="auto">
+
+                            <source id="mainVideoSource"
+                                    src="/images/accounting.mp4?v=@videoVersion"
+                                    type="video/mp4" />
+
+                        </video>
+
+                    </div>
+
+
+                    <!-- INFORMATION -->
+
+                    <div class="program-info">
+
+                        <div class="program-category"
+                             id="programCategory">
+                            Economics &amp; Finance
+                        </div>
+
+                        <h3 id="programTitle">
+                            Accounting
+                        </h3>
+
+                        <h4 id="programSubtitle">
+                            Financial Analysis &amp; Business
+                        </h4>
+
+                        <p id="programDescription">
+                            Explore financial reporting, budgeting,
+                            auditing, cost analysis, and the economic
+                            principles that support modern organizations.
+                        </p>
+
+
+                        <div class="program-controls">
+
+                            <button class="program-arrow"
+                                    type="button"
+                                    onclick="previousProgram()">
+                                &#10094;
+                            </button>
+
+
+                            <div class="program-number">
+
+                                <span id="currentProgram">
+                                    1
+                                </span>
+
+                                / 3
+
+                            </div>
+
+
+                            <button class="program-arrow"
+                                    type="button"
+                                    onclick="nextProgram()">
+                                &#10095;
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- RIGHT PREVIEW -->
+
+                <div class="program-side">
+
+                    <video id="rightPreviewVideo"
+                           autoplay
+                           muted
+                           loop
+                           playsinline
+                           preload="auto">
+
+                        <source id="rightVideo"
+                                src="/images/mathematics.mp4?v=@videoVersion"
+                                type="video/mp4" />
+
+                    </video>
+
+                    <div class="program-side-label"
+                         id="rightLabel">
+                        Mathematics
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- FOOTER -->
+
+    <footer class="university-footer">
+
+        <div class="footer-content">
+
+            <div class="footer-column">
+
+                <h4>Contact</h4>
+
+                <span class="footer-label">
+                    Phone
+                </span>
+
+                <span class="footer-value">
+                    +966 11 234 5678
+                </span>
+
+                <span class="footer-label">
+                    Email
+                </span>
+
+                <span class="footer-value">
+                    info@university.edu
+                </span>
+
+                <span class="footer-label">
+                    Office Hours
+                </span>
+
+                <span class="footer-value">
+                    Sun - Thu, 8:00 AM - 4:00 PM
+                </span>
+
+            </div>
+
+
+            <div class="footer-column">
+
+                <h4>Campus</h4>
+
+                <ul>
+
+                    <li>
+                        <span>Riyadh, Saudi Arabia</span>
+                    </li>
+
+                    <li>
+                        <span>Main Campus</span>
+                    </li>
+
+                    <li>
+                        <span>Administration Building</span>
+                    </li>
+
+                </ul>
+
+            </div>
+
+
+            <div class="footer-column">
+
+                <h4>Services</h4>
+
+                <ul>
+
+                    <li><span>Students</span></li>
+                    <li><span>Teachers</span></li>
+                    <li><span>Courses</span></li>
+                    <li><span>Rooms</span></li>
+
+                </ul>
+
+            </div>
+
+
+            <div class="footer-column">
+
+                <h4>
+                    Project Developer
+                </h4>
+
+                <span class="footer-label">
+                    Name
+                </span>
+
+                <span class="footer-value">
+                    Lamia Mohammed Alanazi
+                </span>
+
+                <span class="footer-label">
+                    Training ID
+                </span>
+
+                <span class="footer-value">
+                    12771
+                </span>
+
+                <span class="footer-label">
+                    Major
+                </span>
+
+                <span class="footer-value">
+                    SOFTWARE ENGINEERING
+                </span>
+
+
+                <div class="developer-links">
+
+                    <a href="mailto:lamiialnzy11@gmail.com">
+                        Email
+                    </a>
+
+                    <span>|</span>
+
+                    <a href="https://www.linkedin.com/in/lamia-alanazi-39b83836b"
+                       target="_blank"
+                       rel="noopener noreferrer">
+                        LinkedIn
+                    </a>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="footer-bottom">
+
+            &copy; @DateTime.Now.Year Aurelia University
+
+        </div>
+
+    </footer>
+
+</div>
+
+
+<script>
+
+    var programs = [
+
+        {
+            title: "Accounting",
+
+            category:
+                "Economics & Finance",
+
+            subtitle:
+                "Financial Analysis & Business",
+
+            description:
+                "Explore financial reporting, budgeting, auditing, cost analysis, and the economic principles that support modern organizations.",
+
+            video:
+                "/images/accounting.mp4?v=@videoVersion"},
+
+        {
+            title:
+                "Mathematics",
+
+            category:
+                "Logic & Analysis",
+
+            subtitle:
+                "Numbers, Reasoning & Problem Solving",
+
+            description:
+                "Develop strong analytical and problem-solving skills through algebra, statistics, mathematical analysis, and quantitative reasoning.",
+
+            video:
+                "/images/mathematics.mp4?v=@videoVersion"},
+
+        {
+            title:
+                "Biology",
+
+            category:
+                "Life Sciences",
+
+            subtitle:
+                "Living Systems & Scientific Research",
+
+            description:
+                "Explore living organisms, genetics, cells, ecosystems, and biological systems through scientific study and research.",
+
+            video:
+                "/images/biology.mp4?v=@videoVersion"}
+
+    ];
+
+
+    var currentIndex = 0;
+
+
+    function updatePrograms() {
+
+        var current =
+            programs[currentIndex];
+
+
+        var leftIndex =
+            (currentIndex - 1 + programs.length)
+            % programs.length;
+
+
+        var rightIndex =
+            (currentIndex + 1)
+            % programs.length;
+
+
+        document.getElementById("programTitle").innerText =
+            current.title;
+
+
+        document.getElementById("programCategory").innerText =
+            current.category;
+
+
+        document.getElementById("programSubtitle").innerText =
+            current.subtitle;
+
+
+        document.getElementById("programDescription").innerText =
+            current.description;
+
+
+        document.getElementById("currentProgram").innerText =
+            currentIndex + 1;
+
+
+
+        /* =========================
+           MAIN VIDEO
+           ========================= */
+
+        var mainVideo =
+            document.getElementById("mainVideo");
+
+        var mainVideoSource =
+            document.getElementById("mainVideoSource");
+
+
+        mainVideoSource.src =
+            current.video;
+
+        mainVideo.load();
+
+        mainVideo.play()
+            .catch(function () { });
+
+
+
+        /* =========================
+           LEFT VIDEO
+           ========================= */
+
+        var leftPreviewVideo =
+            document.getElementById("leftPreviewVideo");
+
+        var leftVideoSource =
+            document.getElementById("leftVideo");
+
+
+        leftVideoSource.src =
+            programs[leftIndex].video;
+
+        leftPreviewVideo.load();
+
+        leftPreviewVideo.play()
+            .catch(function () { });
+
+
+        document.getElementById("leftLabel").innerText =
+            programs[leftIndex].title;
+
+
+
+        /* =========================
+           RIGHT VIDEO
+           ========================= */
+
+        var rightPreviewVideo =
+            document.getElementById("rightPreviewVideo");
+
+        var rightVideoSource =
+            document.getElementById("rightVideo");
+
+
+        rightVideoSource.src =
+            programs[rightIndex].video;
+
+        rightPreviewVideo.load();
+
+        rightPreviewVideo.play()
+            .catch(function () { });
+
+
+        document.getElementById("rightLabel").innerText =
+            programs[rightIndex].title;
+    }
+
+
+    function nextProgram() {
+
+        currentIndex =
+            (currentIndex + 1)
+            % programs.length;
+
+        updatePrograms();
+    }
+
+
+    function previousProgram() {
+
+        currentIndex =
+            (currentIndex - 1 + programs.length)
+            % programs.length;
+
+        updatePrograms();
+    }
+
+</script>

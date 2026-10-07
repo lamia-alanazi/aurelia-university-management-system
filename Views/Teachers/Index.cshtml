@@ -1,0 +1,3493 @@
+﻿@model IEnumerable<lamia12771.Models.Teacher>
+@using System
+@using System.Collections.Generic
+@using System.Linq
+
+@{ ViewBag.Title = "Teachers";
+
+    var teachers = Model == null
+        ? new List<lamia12771.Models.Teacher>()
+        : Model.ToList();
+
+    var assignedCourses =
+        ViewBag.AssignedCourses as List<lamia12771.Models.Course>
+        ?? new List<lamia12771.Models.Course>();
+
+    var subjects = teachers
+        .Where(t => !string.IsNullOrWhiteSpace(t.Subject))
+        .Select(t => t.Subject.Trim())
+        .Distinct()
+        .OrderBy(s => s)
+        .ToList();
+
+    var mainSubjects = new[]
+    {
+        "Biology",
+        "Business",
+        "Computer Science",
+        "Engineering",
+        "Geography",
+        "Mathematics"
+    };
+
+    bool isAdmin =
+        Session["IsAdmin"] != null
+        && Session["IsAdmin"] is bool
+        && (bool)Session["IsAdmin"]; }
+
+<style>
+
+    /* =========================================================
+       TEACHERS PAGE
+       ========================================================= */
+
+    .teachers-page {
+        width: 100%;
+        min-height: 100vh;
+        padding: 70px 0 90px;
+        background: #ffffff;
+        color: #171717;
+        font-family: Arial, sans-serif;
+    }
+
+        .teachers-page * {
+            box-sizing: border-box;
+        }
+
+    .teachers-container {
+        width: 88%;
+        max-width: 1380px;
+        margin: 0 auto;
+    }
+
+
+    /* =========================================================
+       HEADER
+       ========================================================= */
+
+    .teachers-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+        gap: 40px;
+        padding-bottom: 32px;
+        border-bottom: 1px solid #e1e3e4;
+    }
+
+    .teachers-heading-small {
+        margin-bottom: 10px;
+        color: #3E4348;
+        font-size: 10px;
+        font-weight: 600;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+    }
+
+    .teachers-header h1 {
+        margin: 0;
+        font-family: 'Times New Roman', serif;
+        font-size: 48px;
+        font-weight: 400;
+        color: #171717;
+    }
+
+    .teachers-header p {
+        max-width: 500px;
+        margin: 12px 0 0;
+        font-size: 12px;
+        line-height: 1.8;
+        color: #777777;
+    }
+
+
+    /* =========================================================
+       SUMMARY
+       ========================================================= */
+
+    .teachers-summary {
+        display: flex;
+        align-items: center;
+        gap: 35px;
+    }
+
+    .teacher-summary-item {
+        min-width: 85px;
+    }
+
+    .teacher-summary-number {
+        display: block;
+        font-family: 'Times New Roman', serif;
+        font-size: 32px;
+        line-height: 1;
+        color: #171717;
+    }
+
+    .teacher-summary-label {
+        display: block;
+        margin-top: 7px;
+        font-size: 9px;
+        letter-spacing: .8px;
+        text-transform: uppercase;
+        color: #888888;
+    }
+
+
+    /* =========================================================
+       TOOLBAR
+       ========================================================= */
+
+    .teachers-toolbar {
+        margin: 34px 0 32px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 25px;
+    }
+
+    .teacher-filter-wrap {
+        position: relative;
+        display: inline-flex;
+        align-items: center;
+    }
+
+    .teacher-filter-trigger {
+        position: relative;
+        width: 44px;
+        height: 44px;
+        padding: 0;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid #d8dadd;
+        border-radius: 8px;
+        background: #ffffff;
+        color: #3E4348;
+        cursor: pointer;
+        transition: .25s ease;
+    }
+
+        .teacher-filter-trigger:hover,
+        .teacher-filter-trigger.open {
+            border-color: #3E4348;
+            background: #f4f4f3;
+        }
+
+        .teacher-filter-trigger svg {
+            width: 21px;
+            height: 21px;
+            display: block;
+        }
+
+    .teacher-filter-count {
+        position: absolute;
+        top: -6px;
+        right: -6px;
+        min-width: 18px;
+        height: 18px;
+        padding: 0 5px;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        border: 2px solid #ffffff;
+        border-radius: 20px;
+        background: #3E4348;
+        color: #ffffff;
+        font-size: 8px;
+        font-weight: 700;
+        line-height: 1;
+    }
+
+        .teacher-filter-count.show {
+            display: inline-flex;
+        }
+
+    .teacher-filter-menu {
+        position: absolute;
+        top: calc(100% + 10px);
+        left: 0;
+        z-index: 200;
+        width: 255px;
+        max-width: calc(100vw - 40px);
+        padding: 15px;
+        border: 1px solid #d7dadd;
+        border-radius: 10px;
+        background: #ffffff;
+        box-shadow: 0 18px 45px rgba(32,36,40,.14);
+        opacity: 0;
+        visibility: hidden;
+        transform: translateY(-5px);
+        transition: .2s ease;
+    }
+
+        .teacher-filter-menu.open {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+    .teacher-filter-menu-head {
+        margin-bottom: 10px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid #eceeef;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+    }
+
+    .teacher-filter-menu-title {
+        color: #3E4348;
+        font-size: 9px;
+        font-weight: 700;
+        letter-spacing: 1.2px;
+        text-transform: uppercase;
+    }
+
+    .teacher-filter-clear {
+        padding: 0;
+        border: 0;
+        background: transparent;
+        color: #777777;
+        font-size: 9px;
+        text-transform: uppercase;
+        cursor: pointer;
+    }
+
+        .teacher-filter-clear:hover {
+            color: #3E4348;
+        }
+
+    .teacher-filter-option {
+        min-height: 36px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        cursor: pointer;
+        color: #44494d;
+        font-size: 11px;
+        user-select: none;
+    }
+
+        .teacher-filter-option + .teacher-filter-option {
+            border-top: 1px solid #f0f1f1;
+        }
+
+        .teacher-filter-option input {
+            position: absolute;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+    .teacher-filter-check {
+        width: 16px;
+        height: 16px;
+        flex: 0 0 16px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid #bfc3c5;
+        border-radius: 3px;
+        background: #ffffff;
+        transition: .2s ease;
+    }
+
+    .teacher-filter-option input:checked + .teacher-filter-check {
+        border-color: #3E4348;
+        background: #3E4348;
+    }
+
+        .teacher-filter-option input:checked + .teacher-filter-check:after {
+            content: "";
+            width: 7px;
+            height: 4px;
+            border-left: 2px solid #ffffff;
+            border-bottom: 2px solid #ffffff;
+            transform: rotate(-45deg) translateY(-1px);
+        }
+
+    .teacher-filter-option input:focus + .teacher-filter-check {
+        box-shadow: 0 0 0 2px rgba(62,67,72,.12);
+    }
+
+    .teacher-filter-option-text {
+        flex: 1;
+        min-width: 0;
+    }
+
+
+    /* =========================================================
+       ADD BUTTON
+       ========================================================= */
+
+    .add-teacher-button {
+        display: inline-block;
+        padding: 11px 20px;
+        background: #3E4348;
+        border: 1px solid #3E4348;
+        color: #ffffff;
+        font-size: 10px;
+        letter-spacing: .7px;
+        text-transform: uppercase;
+        text-decoration: none;
+        cursor: pointer;
+        transition: .25s ease;
+    }
+
+        .add-teacher-button:hover,
+        .add-teacher-button:focus {
+            background: #2F3438;
+            border-color: #2F3438;
+            color: #ffffff;
+        }
+
+
+    /* =========================================================
+       CARDS
+       ========================================================= */
+
+    .teachers-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 25px;
+    }
+
+    .teacher-card {
+        position: relative;
+        min-height: 205px;
+        padding: 20px;
+        overflow: hidden;
+        background: #ffffff;
+        border: 1px solid #e1e3e4;
+        border-radius: 8px;
+        box-shadow: 0 8px 24px rgba(32,36,40,.05);
+        cursor: pointer;
+        transition: transform .3s ease, box-shadow .3s ease, border-color .3s ease;
+    }
+
+        .teacher-card:hover {
+            transform: translateY(-5px);
+            border-color: #737A80;
+            box-shadow: 0 18px 45px rgba(32,36,40,.11);
+        }
+
+    .teacher-card-top {
+        display: flex;
+        gap: 16px;
+        align-items: flex-start;
+    }
+
+    .teacher-avatar {
+        width: 76px;
+        height: 94px;
+        flex: 0 0 76px;
+        border: 1px solid #d1d4d6;
+        border-radius: 7px;
+        overflow: hidden;
+        background: #eeeeec;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+        .teacher-avatar img,
+        .teacher-panel-avatar img,
+        .teacher-cv-avatar img {
+            width: 100%;
+            height: 100%;
+            display: block;
+            object-fit: cover;
+            object-position: center top;
+            transform: scale(1.12);
+            transform-origin: center top;
+        }
+
+
+    .teacher-avatar-fallback {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .teacher-card-info {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .teacher-name {
+        margin: 0 0 4px;
+        font-family: 'Times New Roman', serif;
+        font-size: 20px;
+        font-weight: 400;
+        color: #171717;
+    }
+
+    .teacher-role {
+        margin-bottom: 4px;
+        color: #3E4348;
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: .4px;
+        text-transform: uppercase;
+    }
+
+    .teacher-subject {
+        color: #888888;
+        font-size: 11px;
+        line-height: 1.5;
+    }
+
+    .teacher-facts {
+        margin-top: 13px;
+        padding-top: 12px;
+        display: flex;
+        gap: 35px;
+        border-top: 1px solid #eceeef;
+    }
+
+    .teacher-fact-value {
+        display: block;
+        margin-bottom: 3px;
+        font-family: 'Times New Roman', serif;
+        font-size: 17px;
+        color: #171717;
+    }
+
+    .teacher-fact-label {
+        display: block;
+        font-size: 8px;
+        letter-spacing: .8px;
+        text-transform: uppercase;
+        color: #999999;
+    }
+
+    .teacher-card-footer {
+        margin-top: 17px;
+        padding-top: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        border-top: 1px solid #eceeef;
+    }
+
+    .teacher-view-text {
+        color: #3E4348;
+        font-size: 9px;
+        font-weight: 600;
+        letter-spacing: .8px;
+        text-transform: uppercase;
+    }
+
+    .teachers-empty {
+        grid-column: 1 / -1;
+        padding: 70px 20px;
+        text-align: center;
+        border: 1px solid #e1e3e4;
+        color: #777777;
+    }
+
+
+    /* =========================================================
+       OVERLAY
+       ========================================================= */
+
+    .teacher-overlay {
+        position: fixed;
+        inset: 0;
+        z-index: 9998;
+        background: rgba(10,11,13,.64);
+        backdrop-filter: blur(2px);
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity .3s ease;
+    }
+
+        .teacher-overlay.open {
+            opacity: 1;
+            visibility: visible;
+        }
+
+
+    /* =========================================================
+       PANELS
+       ========================================================= */
+
+    .teacher-details-panel,
+    .teacher-form-panel,
+    .teacher-delete-panel,
+    .teacher-full-panel {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        z-index: 9999;
+        max-width: 92%;
+        max-height: 90vh;
+        overflow-y: auto;
+        overflow-x: hidden;
+        background: #ffffff;
+        color: #202326;
+        border: 1px solid #c8cbcd;
+        border-radius: 18px;
+        box-shadow: 0 30px 90px rgba(0,0,0,.28);
+        opacity: 0;
+        visibility: hidden;
+        transform: translate(-50%, -47%) scale(.97);
+        transition: opacity .28s ease, transform .32s ease, visibility .28s ease;
+    }
+
+    .teacher-details-panel,
+    .teacher-form-panel,
+    .teacher-delete-panel {
+        width: 610px;
+    }
+
+    .teacher-full-panel {
+        width: 790px;
+    }
+
+        .teacher-details-panel.open,
+        .teacher-form-panel.open,
+        .teacher-delete-panel.open,
+        .teacher-full-panel.open {
+            opacity: 1;
+            visibility: visible;
+            transform: translate(-50%, -50%) scale(1);
+        }
+
+
+    /* =========================================================
+       PANEL HEADER
+       ========================================================= */
+
+    .teacher-panel-header {
+        position: relative;
+        padding: 28px 30px 23px;
+        background: #ffffff;
+        border-bottom: 1px solid #d1d4d6;
+    }
+
+    .teacher-panel-small {
+        margin-bottom: 7px;
+        color: #646a6e;
+        font-size: 9px;
+        font-weight: 700;
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+    }
+
+    .teacher-panel-header h2 {
+        margin: 0;
+        padding-right: 60px;
+        font-family: 'Times New Roman', serif;
+        font-size: 31px;
+        font-weight: 400;
+        color: #171717;
+    }
+
+    .teacher-panel-header p {
+        max-width: 470px;
+        margin: 7px 0 0;
+        color: #6f7579;
+        font-size: 11px;
+        line-height: 1.7;
+    }
+
+    .teacher-panel-close {
+        position: absolute;
+        right: 25px;
+        top: 27px;
+        width: 42px;
+        height: 42px;
+        border: 1px solid #3E4348;
+        border-radius: 50%;
+        background: #3E4348;
+        color: #ffffff;
+        font-size: 21px;
+        cursor: pointer;
+    }
+
+
+    /* =========================================================
+       OVERVIEW
+       ========================================================= */
+
+    .teacher-panel-body {
+        padding: 27px 30px 32px;
+        background: #ffffff;
+    }
+
+    .teacher-profile-top {
+        display: flex;
+        align-items: center;
+        gap: 18px;
+        padding-bottom: 23px;
+        border-bottom: 1px solid #d5d7d9;
+    }
+
+    .teacher-panel-avatar {
+        width: 78px;
+        height: 92px;
+        flex: 0 0 78px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid #d1d4d6;
+        border-radius: 9px;
+        background: #eeeeec;
+        color: #3E4348;
+        font-family: 'Times New Roman', serif;
+        font-size: 26px;
+    }
+
+    .teacher-profile-name {
+        margin: 0;
+        font-family: 'Times New Roman', serif;
+        font-size: 25px;
+        font-weight: 400;
+    }
+
+    .teacher-profile-role {
+        margin-top: 5px;
+        color: #3E4348;
+        font-size: 9px;
+        font-weight: 700;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+    }
+
+    .teacher-profile-subject {
+        margin-top: 5px;
+        color: #777777;
+        font-size: 12px;
+    }
+
+    .teacher-details-list {
+        margin-top: 24px;
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+    }
+
+    .teacher-details-item {
+        padding: 16px;
+        background: #eeeeec;
+        border: 1px solid #d1d4d6;
+        border-radius: 10px;
+    }
+
+    .teacher-details-label {
+        display: block;
+        margin-bottom: 7px;
+        color: #666c70;
+        font-size: 8px;
+        font-weight: 700;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+    }
+
+    .teacher-details-value {
+        display: block;
+        color: #202326;
+        font-size: 13px;
+        line-height: 1.7;
+    }
+
+
+    /* =========================================================
+       ACTIONS - SAME AS ROOMS
+       ========================================================= */
+
+    .teacher-panel-actions {
+        margin-top: 28px;
+        padding-top: 20px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        border-top: 1px solid #d5d7d9;
+    }
+
+    .teacher-panel-action {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 11px 17px;
+        border: 1px solid #c5c8ca;
+        background: #ffffff;
+        color: #3f4447;
+        font-size: 9px;
+        font-weight: 700;
+        letter-spacing: .8px;
+        text-transform: uppercase;
+        cursor: pointer;
+        transition: .2s ease;
+    }
+
+        .teacher-panel-action:hover {
+            border-color: #3E4348;
+            color: #3E4348;
+        }
+
+        .teacher-panel-action.edit {
+            background: #3E4348;
+            border-color: #3E4348;
+            color: #ffffff;
+        }
+
+            .teacher-panel-action.edit:hover {
+                background: #2F3438;
+                border-color: #2F3438;
+                color: #ffffff;
+            }
+
+
+    /* =========================================================
+       FULL CV
+       ========================================================= */
+
+    .teacher-cv-hero {
+        position: relative;
+        min-height: 205px;
+        padding: 34px;
+        display: flex;
+        align-items: center;
+        gap: 24px;
+        background: #3E4348;
+        color: #ffffff;
+    }
+
+    .teacher-cv-close {
+        position: absolute;
+        right: 24px;
+        top: 22px;
+        width: 42px;
+        height: 42px;
+        border: 1px solid rgba(255,255,255,.3);
+        border-radius: 50%;
+        background: rgba(255,255,255,.08);
+        color: #ffffff;
+        font-size: 21px;
+        cursor: pointer;
+    }
+
+    .teacher-cv-avatar {
+        width: 118px;
+        height: 138px;
+        flex: 0 0 118px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid rgba(255,255,255,.3);
+        border-radius: 10px;
+        background: #eeeeec;
+        color: #3E4348;
+        font-family: 'Times New Roman', serif;
+        font-size: 34px;
+        overflow: hidden;
+    }
+
+    .teacher-cv-heading {
+        padding-right: 45px;
+    }
+
+    .teacher-cv-kicker {
+        margin-bottom: 9px;
+        color: rgba(255,255,255,.65);
+        font-size: 9px;
+        font-weight: 700;
+        letter-spacing: 1.7px;
+        text-transform: uppercase;
+    }
+
+    .teacher-cv-name {
+        margin: 0;
+        font-family: 'Times New Roman', serif;
+        font-size: 34px;
+        font-weight: 400;
+        color: #ffffff;
+    }
+
+    .teacher-cv-title {
+        margin-top: 9px;
+        font-size: 12px;
+        font-weight: 700;
+    }
+
+    .teacher-cv-subject {
+        margin-top: 5px;
+        color: rgba(255,255,255,.72);
+        font-size: 11px;
+    }
+
+    .teacher-cv-body {
+        padding: 30px 34px 34px;
+    }
+
+    .teacher-cv-section {
+        padding-bottom: 24px;
+        margin-bottom: 24px;
+        border-bottom: 1px solid #e0e2e3;
+    }
+
+    .teacher-cv-section-title {
+        margin-bottom: 12px;
+        color: #3E4348;
+        font-size: 9px;
+        font-weight: 700;
+        letter-spacing: 1.4px;
+        text-transform: uppercase;
+    }
+
+    .teacher-cv-about {
+        margin: 0;
+        color: #4f5559;
+        font-size: 13px;
+        line-height: 1.9;
+    }
+
+    .teacher-cv-list {
+        display: flex;
+        flex-direction: column;
+        gap: 9px;
+    }
+
+    .teacher-cv-list-item {
+        padding: 12px 14px;
+        border: 1px solid #d9dcde;
+        border-radius: 8px;
+        background: #f4f4f3;
+        color: #34393d;
+        font-size: 12px;
+        line-height: 1.65;
+    }
+
+    .teacher-cv-tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .teacher-cv-tag {
+        padding: 8px 11px;
+        border: 1px solid #d1d4d6;
+        border-radius: 7px;
+        background: #eeeeec;
+        color: #303438;
+        font-size: 9px;
+        font-weight: 600;
+    }
+
+    .teacher-cv-contact-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+    }
+
+    .teacher-cv-contact-item {
+        padding: 15px;
+        background: #eeeeec;
+        border: 1px solid #d1d4d6;
+        border-radius: 10px;
+    }
+
+    .teacher-cv-contact-label {
+        display: block;
+        margin-bottom: 7px;
+        color: #666c70;
+        font-size: 8px;
+        font-weight: 700;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+    }
+
+    .teacher-cv-contact-value {
+        font-size: 12px;
+        color: #202326;
+    }
+
+
+    /* =========================================================
+       FORMS
+       ========================================================= */
+
+    .teacher-form-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 17px;
+    }
+
+    .teacher-form-field {
+        display: flex;
+        flex-direction: column;
+        gap: 7px;
+    }
+
+        .teacher-form-field.full {
+            grid-column: 1 / -1;
+        }
+
+        .teacher-form-field label {
+            color: #555b5f;
+            font-size: 9px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+    .teacher-input,
+    .teacher-textarea {
+        width: 100%;
+        border: 1px solid #c9ccce;
+        border-radius: 8px;
+        background: #eeeeec;
+        color: #202326;
+        font-family: Arial, sans-serif;
+        font-size: 12px;
+    }
+
+    .teacher-input {
+        height: 46px;
+        padding: 0 13px;
+    }
+
+    .teacher-textarea {
+        min-height: 90px;
+        padding: 12px 13px;
+        resize: vertical;
+    }
+
+    .teacher-form-help {
+        font-size: 8px;
+        color: #777777;
+    }
+
+    .teacher-other-subject {
+        display: none;
+    }
+
+        .teacher-other-subject.open {
+            display: flex;
+        }
+
+    .teacher-form-actions {
+        margin-top: 25px;
+        padding-top: 20px;
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+        border-top: 1px solid #d1d4d6;
+    }
+
+    .teacher-cancel-button,
+    .teacher-save-button {
+        min-width: 115px;
+        padding: 11px 18px;
+        font-size: 9px;
+        font-weight: 700;
+        letter-spacing: .8px;
+        text-transform: uppercase;
+        cursor: pointer;
+    }
+
+    .teacher-cancel-button {
+        border: 1px solid #bfc3c5;
+        background: #ffffff;
+    }
+
+    .teacher-save-button {
+        border: 1px solid #3E4348;
+        background: #3E4348;
+        color: #ffffff;
+    }
+
+    #deleteTeacherPanel .teacher-save-button {
+        background: #b74a4a;
+        border-color: #b74a4a;
+    }
+
+    .teacher-delete-warning {
+        margin-top: 20px;
+        padding: 17px;
+        background: #f4f4f3;
+        border: 1px solid #d7d9db;
+        border-radius: 9px;
+    }
+
+    .teacher-delete-warning-title {
+        margin-bottom: 8px;
+        color: #8a3d3d;
+        font-size: 9px;
+        font-weight: 700;
+        text-transform: uppercase;
+    }
+
+
+    @@media (max-width: 1050px) {
+        .teachers-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+
+    @@media (max-width: 768px) {
+        .teachers-container {
+            width: 92%;
+        }
+
+        .teachers-header {
+            flex-direction: column;
+        }
+
+        .teachers-toolbar {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .teachers-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    @@media (max-width: 560px) {
+        .teacher-details-list,
+        .teacher-form-grid,
+        .teacher-cv-contact-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .teacher-form-field.full {
+            grid-column: auto;
+        }
+
+        .teacher-cv-hero {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+    }
+</style>
+
+
+<div class="teachers-page">
+
+    <div class="teachers-container">
+
+        <div class="teachers-header">
+
+            <div>
+                <div class="teachers-heading-small">
+                    Faculty Directory
+                </div>
+
+                <h1>Teachers</h1>
+
+                <p>
+                    Meet the faculty members teaching across
+                    Aurelia University's academic subjects.
+                </p>
+            </div>
+
+
+            <div class="teachers-summary">
+
+                <div class="teacher-summary-item">
+                    <span class="teacher-summary-number">
+                        @teachers.Count
+                    </span>
+
+                    <span class="teacher-summary-label">
+                        Faculty Listed
+                    </span>
+                </div>
+
+
+                <div class="teacher-summary-item">
+                    <span class="teacher-summary-number">
+                        @subjects.Count
+                    </span>
+
+                    <span class="teacher-summary-label">
+                        Subjects
+                    </span>
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="teachers-toolbar">
+
+            <div class="teacher-filter-wrap"
+                 id="teacherFilterWrap">
+
+                <button type="button"
+                        class="teacher-filter-trigger"
+                        id="teacherFilterButton"
+                        aria-label="Filter teachers by subject"
+                        aria-expanded="false"
+                        aria-controls="teacherFilterMenu">
+
+                    <svg viewBox="0 0 24 24"
+                         aria-hidden="true">
+                        <path d="M4 5h16l-6.3 7.1v5.2l-3.4 1.8v-7L4 5z"
+                              fill="none"
+                              stroke="currentColor"
+                              stroke-width="1.8"
+                              stroke-linejoin="round" />
+                        <path d="M16.5 8.5h3.5M15.5 12h4.5M17 15.5h3"
+                              fill="none"
+                              stroke="currentColor"
+                              stroke-width="1.8"
+                              stroke-linecap="round" />
+                    </svg>
+
+                    <span class="teacher-filter-count"
+                          id="teacherFilterCount">
+                    </span>
+
+                </button>
+
+
+                <div class="teacher-filter-menu"
+                     id="teacherFilterMenu">
+
+                    <div class="teacher-filter-menu-head">
+
+                        <span class="teacher-filter-menu-title">
+                            Filter by Subject
+                        </span>
+
+                        <button type="button"
+                                class="teacher-filter-clear"
+                                id="teacherFilterClear">
+                            Clear
+                        </button>
+
+                    </div>
+
+
+                    <label class="teacher-filter-option">
+
+                        <input type="checkbox"
+                               class="teacher-filter-checkbox"
+                               value="All"
+                               id="teacherFilterAll"
+                               checked />
+
+                        <span class="teacher-filter-check"></span>
+
+                        <span class="teacher-filter-option-text">
+                            All Subjects
+                        </span>
+
+                    </label>
+
+
+                    <label class="teacher-filter-option">
+
+                        <input type="checkbox"
+                               class="teacher-filter-checkbox"
+                               value="Biology" />
+
+                        <span class="teacher-filter-check"></span>
+
+                        <span class="teacher-filter-option-text">
+                            Biology
+                        </span>
+
+                    </label>
+
+
+                    <label class="teacher-filter-option">
+
+                        <input type="checkbox"
+                               class="teacher-filter-checkbox"
+                               value="Business" />
+
+                        <span class="teacher-filter-check"></span>
+
+                        <span class="teacher-filter-option-text">
+                            Business
+                        </span>
+
+                    </label>
+
+
+                    <label class="teacher-filter-option">
+
+                        <input type="checkbox"
+                               class="teacher-filter-checkbox"
+                               value="Computer Science" />
+
+                        <span class="teacher-filter-check"></span>
+
+                        <span class="teacher-filter-option-text">
+                            Computer Science
+                        </span>
+
+                    </label>
+
+
+                    <label class="teacher-filter-option">
+
+                        <input type="checkbox"
+                               class="teacher-filter-checkbox"
+                               value="Engineering" />
+
+                        <span class="teacher-filter-check"></span>
+
+                        <span class="teacher-filter-option-text">
+                            Engineering
+                        </span>
+
+                    </label>
+
+
+                    <label class="teacher-filter-option">
+
+                        <input type="checkbox"
+                               class="teacher-filter-checkbox"
+                               value="Geography" />
+
+                        <span class="teacher-filter-check"></span>
+
+                        <span class="teacher-filter-option-text">
+                            Geography
+                        </span>
+
+                    </label>
+
+
+                    <label class="teacher-filter-option">
+
+                        <input type="checkbox"
+                               class="teacher-filter-checkbox"
+                               value="Mathematics" />
+
+                        <span class="teacher-filter-check"></span>
+
+                        <span class="teacher-filter-option-text">
+                            Mathematics
+                        </span>
+
+                    </label>
+
+
+                    <label class="teacher-filter-option">
+
+                        <input type="checkbox"
+                               class="teacher-filter-checkbox"
+                               value="Other" />
+
+                        <span class="teacher-filter-check"></span>
+
+                        <span class="teacher-filter-option-text">
+                            Other
+                        </span>
+
+                    </label>
+
+                </div>
+
+            </div>
+
+
+            @if (isAdmin)
+            {
+<button type="button"
+        class="add-teacher-button"
+        onclick="openAddTeacherPanel()">
+    Add New Teacher
+</button>   }
+
+        </div>
+
+
+        <div class="teachers-grid">
+
+            @if (teachers.Count == 0)
+            {
+<div class="teachers-empty">
+    No teachers have been added yet.
+</div> }
+else
+{
+for (int i = 0; i < teachers.Count; i++)
+{
+    var item = teachers[i];
+
+    var initials = "";
+
+    if (!string.IsNullOrWhiteSpace(item.Name))
+    {
+        var parts = item.Name.Split(
+            new[] { ' ' },
+            StringSplitOptions.RemoveEmptyEntries
+        );
+
+        initials = parts.Length == 1
+            ? parts[0].Substring(0, 1)
+            : parts[0].Substring(0, 1)
+              + parts[parts.Length - 1].Substring(0, 1);
+    }
+
+    var currentSubject =
+        (item.Subject ?? "").Trim();
+
+    var filterSubject =
+        mainSubjects.Contains(currentSubject)
+            ? currentSubject
+            : "Other";
+
+
+<article class="teacher-card"
+         data-subject="@filterSubject"
+         onclick="openTeacherPanel(@i)">
+
+    <div class="teacher-card-top">
+
+        <div class="teacher-avatar">
+
+            @if (!string.IsNullOrWhiteSpace(item.ImagePath))
+            {
+<img src="@item.ImagePath"
+     alt="@item.Name"
+     onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+
+                        <span class="teacher-avatar-fallback"
+                              style="display:none;">
+                            @initials
+                        </span> }
+                    else
+                    {
+<span class="teacher-avatar-fallback">
+    @initials
+</span>}
+
+        </div>
+
+        <div class="teacher-card-info">
+
+            <h3 class="teacher-name">
+                @item.Name
+            </h3>
+
+            <div class="teacher-role">
+                @(string.IsNullOrWhiteSpace(item.Title)
+                                        ? "Faculty Member"
+                                        : item.Title)
+            </div>
+
+            <div class="teacher-subject">
+                @item.Subject
+            </div>
+
+            <div class="teacher-facts">
+
+                <div>
+                    <span class="teacher-fact-value">
+                        @item.TeacherId
+                    </span>
+
+                    <span class="teacher-fact-label">
+                        Teacher ID
+                    </span>
+                </div>
+
+                <div>
+                    <span class="teacher-fact-value">
+                        @(string.IsNullOrWhiteSpace(item.Office)
+                                                ? "—"
+                                                : item.Office)
+                    </span>
+
+                    <span class="teacher-fact-label">
+                        Office
+                    </span>
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <div class="teacher-card-footer">
+
+        <span class="teacher-view-text">
+            View Details →
+        </span>
+
+    </div>
+
+</article>      }
+}
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<div class="teacher-overlay"
+     id="teacherOverlay"
+     onclick="closeAllTeacherPanels()">
+</div>
+
+
+<!-- OVERVIEW -->
+
+<div class="teacher-details-panel"
+     id="teacherDetailsPanel">
+
+    <div class="teacher-panel-header">
+
+        <div class="teacher-panel-small">
+            Faculty Profile
+        </div>
+
+        <h2>Teacher Details</h2>
+
+        <p>
+            Overview of the selected faculty member.
+        </p>
+
+        <button type="button"
+                class="teacher-panel-close"
+                onclick="closeAllTeacherPanels()">
+            ×
+        </button>
+
+    </div>
+
+
+    <div class="teacher-panel-body">
+
+        <div class="teacher-profile-top">
+
+            <div class="teacher-panel-avatar"
+                 id="panelTeacherInitials">
+            </div>
+
+            <div>
+
+                <h3 class="teacher-profile-name"
+                    id="panelTeacherName">
+                </h3>
+
+                <div class="teacher-profile-role"
+                     id="panelTeacherTitle">
+                </div>
+
+                <div class="teacher-profile-subject"
+                     id="panelTeacherSubject">
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="teacher-details-list">
+
+            <div class="teacher-details-item">
+                <span class="teacher-details-label">
+                    Teacher ID
+                </span>
+
+                <span class="teacher-details-value"
+                      id="panelTeacherId">
+                </span>
+            </div>
+
+
+            <div class="teacher-details-item">
+                <span class="teacher-details-label">
+                    Subject
+                </span>
+
+                <span class="teacher-details-value"
+                      id="panelTeacherSubjectBox">
+                </span>
+            </div>
+
+
+            <div class="teacher-details-item">
+                <span class="teacher-details-label">
+                    Office
+                </span>
+
+                <span class="teacher-details-value"
+                      id="panelTeacherOffice">
+                </span>
+            </div>
+
+
+            <div class="teacher-details-item">
+                <span class="teacher-details-label">
+                    Position
+                </span>
+
+                <span class="teacher-details-value"
+                      id="panelTeacherPosition">
+                </span>
+            </div>
+
+        </div>
+
+
+        <div class="teacher-panel-actions">
+
+            @if (isAdmin)
+            {
+<button type="button"
+        class="teacher-panel-action edit"
+        onclick="openEditTeacherPanel()">
+    Edit Teacher
+</button>   }
+
+            <button type="button"
+                    class="teacher-panel-action"
+                    onclick="openFullTeacherDetailsPanel()">
+                Full Details
+            </button>
+
+            @if (isAdmin)
+            {
+<button type="button"
+        class="teacher-panel-action"
+        onclick="openDeleteTeacherPanel()">
+    Delete
+</button>   }
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- FULL CV -->
+
+<div class="teacher-full-panel"
+     id="fullTeacherDetailsPanel">
+
+    <div class="teacher-cv-hero">
+
+        <button type="button"
+                class="teacher-cv-close"
+                onclick="closeAllTeacherPanels()">
+            ×
+        </button>
+
+
+        <div class="teacher-cv-avatar"
+             id="fullTeacherInitials">
+        </div>
+
+
+        <div class="teacher-cv-heading">
+
+            <div class="teacher-cv-kicker">
+                Faculty Curriculum Vitae
+            </div>
+
+            <h2 class="teacher-cv-name"
+                id="fullTeacherName">
+            </h2>
+
+            <div class="teacher-cv-title"
+                 id="fullTeacherTitle">
+            </div>
+
+            <div class="teacher-cv-subject"
+                 id="fullTeacherSubject">
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <div class="teacher-cv-body">
+
+
+        <div class="teacher-cv-section">
+
+            <div class="teacher-cv-section-title">
+                About
+            </div>
+
+            <p class="teacher-cv-about"
+               id="fullTeacherAbout">
+            </p>
+
+        </div>
+
+
+        <div class="teacher-cv-section">
+
+            <div class="teacher-cv-section-title">
+                Education
+            </div>
+
+            <div class="teacher-cv-list"
+                 id="fullTeacherEducation">
+            </div>
+
+        </div>
+
+
+        <div class="teacher-cv-section">
+
+            <div class="teacher-cv-section-title">
+                Academic Experience
+            </div>
+
+            <div class="teacher-cv-list"
+                 id="fullTeacherExperience">
+            </div>
+
+        </div>
+
+
+        <div class="teacher-cv-section">
+
+            <div class="teacher-cv-section-title">
+                Research Interests
+            </div>
+
+            <div class="teacher-cv-tags"
+                 id="fullTeacherResearch">
+            </div>
+
+        </div>
+
+
+        <div class="teacher-cv-section">
+
+            <div class="teacher-cv-section-title">
+                Assigned Courses
+            </div>
+
+            <div class="teacher-cv-list"
+                 id="fullTeacherAssignedCourses">
+            </div>
+
+        </div>
+
+
+        <div class="teacher-cv-section">
+
+            <div class="teacher-cv-section-title">
+                Courses Taught
+            </div>
+
+            <div class="teacher-cv-list"
+                 id="fullTeacherCourses">
+            </div>
+
+        </div>
+
+
+        <div class="teacher-cv-section">
+
+            <div class="teacher-cv-section-title">
+                Contact Information
+            </div>
+
+            <div class="teacher-cv-contact-grid">
+
+                <div class="teacher-cv-contact-item">
+                    <span class="teacher-cv-contact-label">
+                        Office
+                    </span>
+
+                    <span class="teacher-cv-contact-value"
+                          id="fullTeacherOffice">
+                    </span>
+                </div>
+
+
+                <div class="teacher-cv-contact-item">
+                    <span class="teacher-cv-contact-label">
+                        Email
+                    </span>
+
+                    <span class="teacher-cv-contact-value"
+                          id="fullTeacherEmail">
+                    </span>
+                </div>
+
+
+                <div class="teacher-cv-contact-item">
+                    <span class="teacher-cv-contact-label">
+                        Subject
+                    </span>
+
+                    <span class="teacher-cv-contact-value"
+                          id="fullTeacherSubjectBox">
+                    </span>
+                </div>
+
+
+                <div class="teacher-cv-contact-item">
+                    <span class="teacher-cv-contact-label">
+                        Teacher ID
+                    </span>
+
+                    <span class="teacher-cv-contact-value"
+                          id="fullTeacherId">
+                    </span>
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="teacher-panel-actions">
+
+            <button type="button"
+                    class="teacher-panel-action"
+                    onclick="backFromFullTeacherDetails()">
+                Back
+            </button>
+
+            @if (isAdmin)
+            {
+<button type="button"
+        class="teacher-panel-action edit"
+        onclick="openEditTeacherPanel()">
+    Edit Teacher
+</button>   }
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- ADD -->
+
+<div class="teacher-form-panel"
+     id="addTeacherPanel">
+
+    <div class="teacher-panel-header">
+
+        <div class="teacher-panel-small">
+            Faculty Management
+        </div>
+
+        <h2>Add New Teacher</h2>
+
+        <p>
+            Add a new faculty member and their academic profile.
+        </p>
+
+        <button type="button"
+                class="teacher-panel-close"
+                onclick="closeAllTeacherPanels()">
+            ×
+        </button>
+
+    </div>
+
+
+    @using (Html.BeginForm(
+        "Create",
+        "Teachers",
+        FormMethod.Post,
+        new { id = "addTeacherForm" }))
+    {
+@Html.AntiForgeryToken()
+
+                <div class="teacher-panel-body">
+
+                    <input type="hidden"
+                           name="Subject"
+                           id="addTeacherSubjectValue" />
+
+                    <div class="teacher-form-grid">
+
+                        <!-- NAME - FULL WIDTH -->
+
+                        <div class="teacher-form-field full">
+                            <label>Name</label>
+
+                            <input name="Name"
+                                   class="teacher-input"
+                                   required />
+                        </div>
+
+
+                        <!-- ACADEMIC TITLE + SUBJECT -->
+
+                        <div class="teacher-form-field">
+                            <label>Academic Title (Optional)</label>
+
+                            <input name="Title"
+                                   class="teacher-input" />
+                        </div>
+
+
+                        <div class="teacher-form-field">
+
+                            <label>Subject</label>
+
+                            <select id="addTeacherSubjectSelect"
+                                    class="teacher-input"
+                                    required>
+
+                                <option value="">
+                                    Select Subject
+                                </option>
+
+                                <option value="Computer Science">
+                                    Computer Science
+                                </option>
+
+                                <option value="Biology">
+                                    Biology
+                                </option>
+
+                                <option value="Business">
+                                    Business
+                                </option>
+
+                                <option value="Engineering">
+                                    Engineering
+                                </option>
+
+                                <option value="Geography">
+                                    Geography
+                                </option>
+
+                                <option value="Mathematics">
+                                    Mathematics
+                                </option>
+
+                                <option value="Other">
+                                    Other
+                                </option>
+
+                            </select>
+
+                        </div>
+
+
+                        <!-- OTHER SUBJECT - FULL WIDTH -->
+
+                        <div class="teacher-form-field full teacher-other-subject"
+                             id="addOtherSubjectField">
+
+                            <label>
+                                Enter Subject
+                            </label>
+
+                            <input type="text"
+                                   id="addOtherSubjectInput"
+                                   class="teacher-input"
+                                   placeholder="Example: Chemistry" />
+
+                        </div>
+
+
+                        <!-- OFFICE + EMAIL -->
+
+                        <div class="teacher-form-field">
+                            <label>Office (Optional)</label>
+
+                            <input name="Office"
+                                   class="teacher-input" />
+                        </div>
+
+
+                        <div class="teacher-form-field">
+                            <label>Email</label>
+
+                            <input type="email"
+                                   name="Email"
+                                   class="teacher-input"
+                                   required />
+                        </div>
+
+
+                        <!-- ABOUT + EDUCATION -->
+
+                        <div class="teacher-form-field">
+                            <label>About (Optional)</label>
+
+                            <textarea name="About"
+                                      class="teacher-textarea"></textarea>
+                        </div>
+
+
+                        <div class="teacher-form-field">
+                            <label>Education (Optional)</label>
+
+                            <textarea name="Education"
+                                      class="teacher-textarea"></textarea>
+
+                            <div class="teacher-form-help">
+                                Separate each item using |
+                            </div>
+                        </div>
+
+
+                        <!-- ACADEMIC EXPERIENCE + RESEARCH INTERESTS -->
+
+                        <div class="teacher-form-field">
+                            <label>Academic Experience (Optional)</label>
+
+                            <textarea name="AcademicExperience"
+                                      class="teacher-textarea"></textarea>
+
+                            <div class="teacher-form-help">
+                                Separate each item using |
+                            </div>
+                        </div>
+
+
+                        <div class="teacher-form-field">
+                            <label>Research Interests (Optional)</label>
+
+                            <textarea name="ResearchInterests"
+                                      class="teacher-textarea"></textarea>
+
+                            <div class="teacher-form-help">
+                                Separate interests using |
+                            </div>
+                        </div>
+
+
+                        <!-- COURSES TAUGHT + IMAGE PATH -->
+
+                        <div class="teacher-form-field">
+                            <label>Courses Taught (Optional)</label>
+
+                            <textarea name="CoursesTaught"
+                                      class="teacher-textarea"></textarea>
+
+                            <div class="teacher-form-help">
+                                Separate courses using |
+                            </div>
+                        </div>
+
+
+                        <div class="teacher-form-field">
+                            <label>Image Path (Optional)</label>
+
+                            <input name="ImagePath"
+                                   class="teacher-input" />
+                        </div>
+
+                    </div>
+
+
+                    <div class="teacher-form-actions">
+
+                        <button type="button"
+                                class="teacher-cancel-button"
+                                onclick="closeAllTeacherPanels()">
+                            Cancel
+                        </button>
+
+                        <button type="submit"
+                                class="teacher-save-button">
+                            Add Teacher
+                        </button>
+
+                    </div>
+
+                </div>}
+
+</div>
+<!-- EDIT -->
+
+<div class="teacher-form-panel"
+     id="editTeacherPanel">
+
+    <div class="teacher-panel-header">
+
+        <div class="teacher-panel-small">
+            Faculty Management
+        </div>
+
+        <h2>Edit Teacher</h2>
+
+        <p>
+            Update the faculty member's complete profile.
+        </p>
+
+        <button type="button"
+                class="teacher-panel-close"
+                onclick="backToTeacherDetails()">
+            ×
+        </button>
+
+    </div>
+
+
+    @using (Html.BeginForm(
+        "Edit",
+        "Teachers",
+        FormMethod.Post,
+        new { id = "editTeacherForm" }))
+    {
+        @Html.AntiForgeryToken()
+
+        <div class="teacher-panel-body">
+
+            <input type="hidden"
+                   name="TeacherId"
+                   id="editTeacherId" />
+
+            <input type="hidden"
+                   name="Subject"
+                   id="editTeacherSubjectValue" />
+
+
+            <div class="teacher-form-grid">
+
+                <!-- NAME - FULL WIDTH -->
+
+                <div class="teacher-form-field full">
+                    <label>Name</label>
+
+                    <input name="Name"
+                           id="editTeacherName"
+                           class="teacher-input"
+                           required />
+                </div>
+
+
+                <!-- ACADEMIC TITLE + SUBJECT -->
+
+                <div class="teacher-form-field">
+                    <label>Academic Title (Optional)</label>
+
+                    <input name="Title"
+                           id="editTeacherTitle"
+                           class="teacher-input" />
+                </div>
+
+
+                <div class="teacher-form-field">
+
+                    <label>Subject</label>
+
+                    <select id="editTeacherSubjectSelect"
+                            class="teacher-input"
+                            required>
+
+                        <option value="">
+                            Select Subject
+                        </option>
+
+                        <option value="Computer Science">
+                            Computer Science
+                        </option>
+
+                        <option value="Biology">
+                            Biology
+                        </option>
+
+                        <option value="Business">
+                            Business
+                        </option>
+
+                        <option value="Engineering">
+                            Engineering
+                        </option>
+
+                        <option value="Geography">
+                            Geography
+                        </option>
+
+                        <option value="Mathematics">
+                            Mathematics
+                        </option>
+
+                        <option value="Other">
+                            Other
+                        </option>
+
+                    </select>
+
+                </div>
+
+
+                <!-- OTHER SUBJECT - FULL WIDTH -->
+
+                <div class="teacher-form-field full teacher-other-subject"
+                     id="editOtherSubjectField">
+
+                    <label>
+                        Enter Subject
+                    </label>
+
+                    <input type="text"
+                           id="editOtherSubjectInput"
+                           class="teacher-input"
+                           placeholder="Example: Chemistry" />
+
+                </div>
+
+
+                <!-- OFFICE + EMAIL -->
+
+                <div class="teacher-form-field">
+                    <label>Office (Optional)</label>
+
+                    <input name="Office"
+                           id="editTeacherOffice"
+                           class="teacher-input" />
+                </div>
+
+
+                <div class="teacher-form-field">
+                    <label>Email</label>
+
+                    <input type="email"
+                           name="Email"
+                           id="editTeacherEmail"
+                           class="teacher-input"
+                           required />
+                </div>
+
+
+                <!-- ABOUT + EDUCATION -->
+
+                <div class="teacher-form-field">
+                    <label>About (Optional)</label>
+
+                    <textarea name="About"
+                              id="editTeacherAbout"
+                              class="teacher-textarea"></textarea>
+                </div>
+
+
+                <div class="teacher-form-field">
+                    <label>Education (Optional)</label>
+
+                    <textarea name="Education"
+                              id="editTeacherEducation"
+                              class="teacher-textarea"></textarea>
+                </div>
+
+
+                <!-- ACADEMIC EXPERIENCE + RESEARCH INTERESTS -->
+
+                <div class="teacher-form-field">
+                    <label>Academic Experience (Optional)</label>
+
+                    <textarea name="AcademicExperience"
+                              id="editTeacherExperience"
+                              class="teacher-textarea"></textarea>
+                </div>
+
+
+                <div class="teacher-form-field">
+                    <label>Research Interests (Optional)</label>
+
+                    <textarea name="ResearchInterests"
+                              id="editTeacherResearch"
+                              class="teacher-textarea"></textarea>
+                </div>
+
+
+                <!-- COURSES TAUGHT + IMAGE PATH -->
+
+                <div class="teacher-form-field">
+                    <label>Courses Taught (Optional)</label>
+
+                    <textarea name="CoursesTaught"
+                              id="editTeacherCourses"
+                              class="teacher-textarea"></textarea>
+                </div>
+
+
+                <div class="teacher-form-field">
+                    <label>Image Path (Optional)</label>
+
+                    <input name="ImagePath"
+                           id="editTeacherImagePath"
+                           class="teacher-input" />
+                </div>
+
+            </div>
+
+
+            <div class="teacher-form-actions">
+
+                <button type="button"
+                        class="teacher-cancel-button"
+                        onclick="backToTeacherDetails()">
+                    Cancel
+                </button>
+
+                <button type="submit"
+                        class="teacher-save-button">
+                    Save Changes
+                </button>
+
+            </div>
+
+        </div>
+    }
+
+</div>
+
+
+<!-- DELETE -->
+
+<div class="teacher-delete-panel"
+     id="deleteTeacherPanel">
+
+    <div class="teacher-panel-header">
+
+        <div class="teacher-panel-small">
+            Faculty Management
+        </div>
+
+        <h2>Delete Teacher</h2>
+
+        <p>
+            Please confirm that you want to permanently
+            remove this faculty member.
+        </p>
+
+        <button type="button"
+                class="teacher-panel-close"
+                onclick="backFromTeacherDelete()">
+            ×
+        </button>
+
+    </div>
+
+
+    @using (Html.BeginForm("Delete", "Teachers", FormMethod.Post))
+    {
+@Html.AntiForgeryToken()
+
+                <div class="teacher-panel-body">
+
+                    <input type="hidden"
+                           name="id"
+                           id="deleteTeacherId" />
+
+
+                    <div class="teacher-details-list">
+
+                        <div class="teacher-details-item">
+                            <span class="teacher-details-label">
+                                Name
+                            </span>
+
+                            <span class="teacher-details-value"
+                                  id="deleteTeacherName">
+                            </span>
+                        </div>
+
+                        <div class="teacher-details-item">
+                            <span class="teacher-details-label">
+                                Subject
+                            </span>
+
+                            <span class="teacher-details-value"
+                                  id="deleteTeacherSubject">
+                            </span>
+                        </div>
+
+                        <div class="teacher-details-item">
+                            <span class="teacher-details-label">
+                                Office
+                            </span>
+
+                            <span class="teacher-details-value"
+                                  id="deleteTeacherOffice">
+                            </span>
+                        </div>
+
+                        <div class="teacher-details-item">
+                            <span class="teacher-details-label">
+                                Teacher ID
+                            </span>
+
+                            <span class="teacher-details-value"
+                                  id="deleteTeacherIdDisplay">
+                            </span>
+                        </div>
+
+                    </div>
+
+
+                    <div class="teacher-delete-warning">
+
+                        <div class="teacher-delete-warning-title">
+                            Warning
+                        </div>
+
+                        This teacher will be permanently deleted.
+                        This action cannot be undone.
+
+                    </div>
+
+
+                    <div class="teacher-form-actions">
+
+                        <button type="button"
+                                class="teacher-cancel-button"
+                                onclick="backFromTeacherDelete()">
+                            Cancel
+                        </button>
+
+                        <button type="submit"
+                                class="teacher-save-button">
+                            Delete Teacher
+                        </button>
+
+                    </div>
+
+                </div>}
+
+</div>
+
+
+<script>
+
+    var isAdmin = @isAdmin.ToString().ToLower();
+
+    var mainTeacherSubjects = [
+        "Biology",
+        "Business",
+        "Computer Science",
+        "Engineering",
+        "Geography",
+        "Mathematics"
+    ];
+
+
+    var teachersData = [
+
+        @for (int i = 0; i < teachers.Count; i++)
+        {
+            var teacher = teachers[i];
+
+            var assignedCourseText =
+                string.Join(
+                    "|",
+                    assignedCourses
+                        .Where(c => c.TeacherId == teacher.TeacherId)
+                        .OrderBy(c => c.CourseCode)
+                        .Select(c =>
+                            (string.IsNullOrWhiteSpace(c.CourseCode)
+                                ? ""
+                                : c.CourseCode + " — ")
+                            + (c.CourseName ?? "Course"))
+                        .ToList()
+                );
+
+            <text>
+            {
+                id: @teacher.TeacherId,
+
+                name:
+                    '@Html.Raw(System.Web.HttpUtility.JavaScriptStringEncode(teacher.Name ?? ""))',
+
+                subject:
+                    '@Html.Raw(System.Web.HttpUtility.JavaScriptStringEncode(teacher.Subject ?? ""))',
+
+                office:
+                    '@Html.Raw(System.Web.HttpUtility.JavaScriptStringEncode(teacher.Office ?? ""))',
+
+                title:
+                    '@Html.Raw(System.Web.HttpUtility.JavaScriptStringEncode(teacher.Title ?? ""))',
+
+                about:
+                    '@Html.Raw(System.Web.HttpUtility.JavaScriptStringEncode(teacher.About ?? ""))',
+
+                education:
+                    '@Html.Raw(System.Web.HttpUtility.JavaScriptStringEncode(teacher.Education ?? ""))',
+
+                academicExperience:
+                    '@Html.Raw(System.Web.HttpUtility.JavaScriptStringEncode(teacher.AcademicExperience ?? ""))',
+
+                researchInterests:
+                    '@Html.Raw(System.Web.HttpUtility.JavaScriptStringEncode(teacher.ResearchInterests ?? ""))',
+
+                coursesTaught:
+                    '@Html.Raw(System.Web.HttpUtility.JavaScriptStringEncode(teacher.CoursesTaught ?? ""))',
+
+                assignedCourses:
+                    '@Html.Raw(System.Web.HttpUtility.JavaScriptStringEncode(assignedCourseText ?? ""))',
+
+                email:
+                    '@Html.Raw(System.Web.HttpUtility.JavaScriptStringEncode(teacher.Email ?? ""))',
+
+                imagePath:
+                    '@Html.Raw(System.Web.HttpUtility.JavaScriptStringEncode(teacher.ImagePath ?? ""))'
+
+            }@(i < teachers.Count - 1 ? "," : "")
+            </text>
+        }
+
+    ];
+
+
+    var selectedTeacher = null;
+
+
+    function isMainTeacherSubject(subject) {
+
+        return mainTeacherSubjects.indexOf(subject) !== -1;
+    }
+
+
+    function getTeacherInitials(name) {
+
+        if (!name) {
+            return "";
+        }
+
+        var parts =
+            name.trim().split(/\s+/);
+
+        if (parts.length === 1) {
+            return parts[0].charAt(0).toUpperCase();
+        }
+
+        return (
+            parts[0].charAt(0) +
+            parts[parts.length - 1].charAt(0)
+        ).toUpperCase();
+    }
+
+
+    function setTeacherAvatar(
+        containerId,
+        name,
+        imagePath
+    ) {
+
+        var container =
+            document.getElementById(
+                containerId
+            );
+
+        if (!container) {
+            return;
+        }
+
+
+        container.innerHTML =
+            "";
+
+
+        if (
+            imagePath &&
+            imagePath.trim() !== ""
+        ) {
+
+            var image =
+                document.createElement(
+                    "img"
+                );
+
+            image.src =
+                imagePath;
+
+            image.alt =
+                name || "Teacher";
+
+
+            image.onerror =
+                function () {
+
+                    container.innerHTML =
+                        "";
+
+                    container.textContent =
+                        getTeacherInitials(
+                            name
+                        );
+                };
+
+
+            container.appendChild(
+                image
+            );
+
+            return;
+        }
+
+
+        container.textContent =
+            getTeacherInitials(
+                name
+            );
+    }
+
+
+    function showTeacherOverlay() {
+
+        document
+            .getElementById("teacherOverlay")
+            .classList
+            .add("open");
+    }
+
+
+    function hideTeacherPanelsOnly() {
+
+        var panels = [
+            "teacherDetailsPanel",
+            "fullTeacherDetailsPanel",
+            "addTeacherPanel",
+            "editTeacherPanel",
+            "deleteTeacherPanel"
+        ];
+
+        for (var i = 0; i < panels.length; i++) {
+
+            var panel =
+                document.getElementById(panels[i]);
+
+            if (panel) {
+                panel.classList.remove("open");
+            }
+        }
+    }
+
+
+    function closeAllTeacherPanels() {
+
+        hideTeacherPanelsOnly();
+
+        document
+            .getElementById("teacherOverlay")
+            .classList
+            .remove("open");
+    }
+
+
+    function fillTeacherOverview() {
+
+        if (!selectedTeacher) {
+            return;
+        }
+
+        setTeacherAvatar(
+            "panelTeacherInitials",
+            selectedTeacher.name,
+            selectedTeacher.imagePath
+        );
+
+        document.getElementById("panelTeacherName").textContent =
+            selectedTeacher.name || "Teacher";
+
+        document.getElementById("panelTeacherTitle").textContent =
+            selectedTeacher.title || "Faculty Member";
+
+        document.getElementById("panelTeacherSubject").textContent =
+            selectedTeacher.subject || "No subject assigned";
+
+        document.getElementById("panelTeacherId").textContent =
+            selectedTeacher.id;
+
+        document.getElementById("panelTeacherSubjectBox").textContent =
+            selectedTeacher.subject || "Not Assigned";
+
+        document.getElementById("panelTeacherOffice").textContent =
+            selectedTeacher.office || "Not Assigned";
+
+        document.getElementById("panelTeacherPosition").textContent =
+            selectedTeacher.title || "Faculty Member";
+    }
+
+
+    function openTeacherPanel(index) {
+
+        var teacher =
+            teachersData[index];
+
+        if (!teacher) {
+            return;
+        }
+
+        selectedTeacher =
+            teacher;
+
+        fillTeacherOverview();
+
+        hideTeacherPanelsOnly();
+        showTeacherOverlay();
+
+        document
+            .getElementById("teacherDetailsPanel")
+            .classList
+            .add("open");
+    }
+
+
+    function addListItems(containerId, value, emptyText) {
+
+        var container =
+            document.getElementById(containerId);
+
+        container.innerHTML = "";
+
+
+        if (!value || !value.trim()) {
+
+            var empty =
+                document.createElement("div");
+
+            empty.className =
+                "teacher-cv-list-item";
+
+            empty.textContent =
+                emptyText || "No information available.";
+
+            container.appendChild(empty);
+
+            return;
+        }
+
+
+        var values =
+            value.split("|");
+
+
+        for (var i = 0; i < values.length; i++) {
+
+            if (!values[i].trim()) {
+                continue;
+            }
+
+            var item =
+                document.createElement("div");
+
+            item.className =
+                "teacher-cv-list-item";
+
+            item.textContent =
+                values[i].trim();
+
+            container.appendChild(item);
+        }
+    }
+
+
+    function addResearchTags(value) {
+
+        var container =
+            document.getElementById("fullTeacherResearch");
+
+        container.innerHTML = "";
+
+
+        if (!value || !value.trim()) {
+
+            var tag =
+                document.createElement("span");
+
+            tag.className =
+                "teacher-cv-tag";
+
+            tag.textContent =
+                "No research interests listed";
+
+            container.appendChild(tag);
+
+            return;
+        }
+
+
+        var values =
+            value.split("|");
+
+
+        for (var i = 0; i < values.length; i++) {
+
+            if (!values[i].trim()) {
+                continue;
+            }
+
+            var tag =
+                document.createElement("span");
+
+            tag.className =
+                "teacher-cv-tag";
+
+            tag.textContent =
+                values[i].trim();
+
+            container.appendChild(tag);
+        }
+    }
+
+
+    function fillFullTeacherDetails() {
+
+        if (!selectedTeacher) {
+            return;
+        }
+
+
+        setTeacherAvatar(
+            "fullTeacherInitials",
+            selectedTeacher.name,
+            selectedTeacher.imagePath
+        );
+
+        document.getElementById("fullTeacherName").textContent =
+            selectedTeacher.name || "Teacher";
+
+        document.getElementById("fullTeacherTitle").textContent =
+            selectedTeacher.title || "Faculty Member";
+
+        document.getElementById("fullTeacherSubject").textContent =
+            selectedTeacher.subject || "";
+
+        document.getElementById("fullTeacherAbout").textContent =
+            selectedTeacher.about || "No biography has been added.";
+
+        document.getElementById("fullTeacherOffice").textContent =
+            selectedTeacher.office || "Not Assigned";
+
+        document.getElementById("fullTeacherEmail").textContent =
+            selectedTeacher.email || "Not Assigned";
+
+        document.getElementById("fullTeacherSubjectBox").textContent =
+            selectedTeacher.subject || "Not Assigned";
+
+        document.getElementById("fullTeacherId").textContent =
+            selectedTeacher.id;
+
+
+        addListItems(
+            "fullTeacherEducation",
+            selectedTeacher.education
+        );
+
+        addListItems(
+            "fullTeacherExperience",
+            selectedTeacher.academicExperience
+        );
+
+        addListItems(
+            "fullTeacherAssignedCourses",
+            selectedTeacher.assignedCourses,
+            "No courses currently assigned."
+        );
+
+        addListItems(
+            "fullTeacherCourses",
+            selectedTeacher.coursesTaught
+        );
+
+        addResearchTags(
+            selectedTeacher.researchInterests
+        );
+    }
+
+
+    function openFullTeacherDetailsPanel() {
+
+        if (!selectedTeacher) {
+            return;
+        }
+
+        fillFullTeacherDetails();
+
+        hideTeacherPanelsOnly();
+        showTeacherOverlay();
+
+        document
+            .getElementById("fullTeacherDetailsPanel")
+            .classList
+            .add("open");
+    }
+
+
+    function backFromFullTeacherDetails() {
+
+        fillTeacherOverview();
+
+        hideTeacherPanelsOnly();
+        showTeacherOverlay();
+
+        document
+            .getElementById("teacherDetailsPanel")
+            .classList
+            .add("open");
+    }
+
+
+    /* =========================================================
+       ADD SUBJECT
+       ========================================================= */
+
+    function updateAddTeacherSubject() {
+
+        var select =
+            document.getElementById("addTeacherSubjectSelect");
+
+        var otherField =
+            document.getElementById("addOtherSubjectField");
+
+        var otherInput =
+            document.getElementById("addOtherSubjectInput");
+
+        var hiddenSubject =
+            document.getElementById("addTeacherSubjectValue");
+
+
+        if (select.value === "Other") {
+
+            otherField.classList.add("open");
+            otherInput.required = true;
+
+            hiddenSubject.value =
+                otherInput.value.trim();
+        }
+        else {
+
+            otherField.classList.remove("open");
+            otherInput.required = false;
+            otherInput.value = "";
+
+            hiddenSubject.value =
+                select.value;
+        }
+    }
+
+
+    function openAddTeacherPanel() {
+
+        if (!isAdmin) {
+            return;
+        }
+
+        selectedTeacher = null;
+
+        var form =
+            document.getElementById("addTeacherForm");
+
+        if (form) {
+            form.reset();
+        }
+
+        document.getElementById("addTeacherSubjectValue").value = "";
+        document.getElementById("addOtherSubjectInput").value = "";
+
+        updateAddTeacherSubject();
+
+        hideTeacherPanelsOnly();
+        showTeacherOverlay();
+
+        document
+            .getElementById("addTeacherPanel")
+            .classList
+            .add("open");
+    }
+
+
+    /* =========================================================
+       EDIT SUBJECT
+       ========================================================= */
+
+    function updateEditTeacherSubject() {
+
+        var select =
+            document.getElementById("editTeacherSubjectSelect");
+
+        var otherField =
+            document.getElementById("editOtherSubjectField");
+
+        var otherInput =
+            document.getElementById("editOtherSubjectInput");
+
+        var hiddenSubject =
+            document.getElementById("editTeacherSubjectValue");
+
+
+        if (select.value === "Other") {
+
+            otherField.classList.add("open");
+            otherInput.required = true;
+
+            hiddenSubject.value =
+                otherInput.value.trim();
+        }
+        else {
+
+            otherField.classList.remove("open");
+            otherInput.required = false;
+            otherInput.value = "";
+
+            hiddenSubject.value =
+                select.value;
+        }
+    }
+
+
+    function openEditTeacherPanel() {
+
+        if (!isAdmin) {
+            return;
+        }
+
+        if (!selectedTeacher) {
+            return;
+        }
+
+
+        document.getElementById("editTeacherId").value =
+            selectedTeacher.id;
+
+        document.getElementById("editTeacherName").value =
+            selectedTeacher.name || "";
+
+        document.getElementById("editTeacherTitle").value =
+            selectedTeacher.title || "";
+
+
+        var editSubject =
+            selectedTeacher.subject || "";
+
+
+        if (isMainTeacherSubject(editSubject)) {
+
+            document.getElementById("editTeacherSubjectSelect").value =
+                editSubject;
+
+            document.getElementById("editOtherSubjectInput").value =
+                "";
+        }
+        else {
+
+            document.getElementById("editTeacherSubjectSelect").value =
+                "Other";
+
+            document.getElementById("editOtherSubjectInput").value =
+                editSubject;
+        }
+
+
+        updateEditTeacherSubject();
+
+
+        if (
+            document.getElementById("editTeacherSubjectSelect").value === "Other"
+        ) {
+
+            document.getElementById("editOtherSubjectInput").value =
+                editSubject;
+
+            document.getElementById("editTeacherSubjectValue").value =
+                editSubject;
+        }
+
+
+        document.getElementById("editTeacherOffice").value =
+            selectedTeacher.office || "";
+
+        document.getElementById("editTeacherEmail").value =
+            selectedTeacher.email || "";
+
+        document.getElementById("editTeacherAbout").value =
+            selectedTeacher.about || "";
+
+        document.getElementById("editTeacherEducation").value =
+            selectedTeacher.education || "";
+
+        document.getElementById("editTeacherExperience").value =
+            selectedTeacher.academicExperience || "";
+
+        document.getElementById("editTeacherResearch").value =
+            selectedTeacher.researchInterests || "";
+
+        document.getElementById("editTeacherCourses").value =
+            selectedTeacher.coursesTaught || "";
+
+        document.getElementById("editTeacherImagePath").value =
+            selectedTeacher.imagePath || "";
+
+
+        hideTeacherPanelsOnly();
+        showTeacherOverlay();
+
+        document
+            .getElementById("editTeacherPanel")
+            .classList
+            .add("open");
+    }
+
+
+    function backToTeacherDetails() {
+
+        if (!selectedTeacher) {
+            closeAllTeacherPanels();
+            return;
+        }
+
+        fillTeacherOverview();
+
+        hideTeacherPanelsOnly();
+        showTeacherOverlay();
+
+        document
+            .getElementById("teacherDetailsPanel")
+            .classList
+            .add("open");
+    }
+
+
+    function openDeleteTeacherPanel() {
+
+        if (!isAdmin) {
+            return;
+        }
+
+        if (!selectedTeacher) {
+            return;
+        }
+
+
+        document.getElementById("deleteTeacherId").value =
+            selectedTeacher.id;
+
+        document.getElementById("deleteTeacherName").textContent =
+            selectedTeacher.name || "";
+
+        document.getElementById("deleteTeacherSubject").textContent =
+            selectedTeacher.subject || "Not Assigned";
+
+        document.getElementById("deleteTeacherOffice").textContent =
+            selectedTeacher.office || "Not Assigned";
+
+        document.getElementById("deleteTeacherIdDisplay").textContent =
+            selectedTeacher.id;
+
+
+        hideTeacherPanelsOnly();
+        showTeacherOverlay();
+
+        document
+            .getElementById("deleteTeacherPanel")
+            .classList
+            .add("open");
+    }
+
+
+    function backFromTeacherDelete() {
+
+        backToTeacherDetails();
+    }
+
+
+    /* =========================================================
+       SUBJECT EVENTS
+       ========================================================= */
+
+    document
+        .getElementById("addTeacherSubjectSelect")
+        .addEventListener(
+            "change",
+            updateAddTeacherSubject
+        );
+
+
+    document
+        .getElementById("addOtherSubjectInput")
+        .addEventListener(
+            "input",
+            updateAddTeacherSubject
+        );
+
+
+    document
+        .getElementById("editTeacherSubjectSelect")
+        .addEventListener(
+            "change",
+            updateEditTeacherSubject
+        );
+
+
+    document
+        .getElementById("editOtherSubjectInput")
+        .addEventListener(
+            "input",
+            updateEditTeacherSubject
+        );
+
+
+    document
+        .getElementById("addTeacherForm")
+        .addEventListener(
+            "submit",
+            function (event) {
+
+                updateAddTeacherSubject();
+
+                var subject =
+                    document
+                        .getElementById("addTeacherSubjectValue")
+                        .value
+                        .trim();
+
+                if (!subject) {
+
+                    event.preventDefault();
+
+                    document
+                        .getElementById("addTeacherSubjectSelect")
+                        .focus();
+                }
+            }
+        );
+
+
+    document
+        .getElementById("editTeacherForm")
+        .addEventListener(
+            "submit",
+            function (event) {
+
+                updateEditTeacherSubject();
+
+                var subject =
+                    document
+                        .getElementById("editTeacherSubjectValue")
+                        .value
+                        .trim();
+
+                if (!subject) {
+
+                    event.preventDefault();
+
+                    document
+                        .getElementById("editTeacherSubjectSelect")
+                        .focus();
+                }
+            }
+        );
+
+
+    /* =========================================================
+       FILTER MENU + MULTI CHECKBOX FILTERING
+       ========================================================= */
+
+    (function () {
+
+        var wrap =
+            document.getElementById("teacherFilterWrap");
+
+        var button =
+            document.getElementById("teacherFilterButton");
+
+        var menu =
+            document.getElementById("teacherFilterMenu");
+
+        var clearButton =
+            document.getElementById("teacherFilterClear");
+
+        var allCheckbox =
+            document.getElementById("teacherFilterAll");
+
+        var countBadge =
+            document.getElementById("teacherFilterCount");
+
+        var checkboxes =
+            document.querySelectorAll(".teacher-filter-checkbox");
+
+        var cards =
+            document.querySelectorAll(".teacher-card");
+
+
+        function openFilterMenu() {
+
+            menu.classList.add("open");
+            button.classList.add("open");
+            button.setAttribute("aria-expanded", "true");
+        }
+
+
+        function closeFilterMenu() {
+
+            menu.classList.remove("open");
+            button.classList.remove("open");
+            button.setAttribute("aria-expanded", "false");
+        }
+
+
+        function getSelectedSubjects() {
+
+            var selected = [];
+
+            for (var i = 0; i < checkboxes.length; i++) {
+
+                if (
+                    checkboxes[i].value !== "All" &&
+                    checkboxes[i].checked
+                ) {
+
+                    selected.push(
+                        checkboxes[i].value
+                    );
+                }
+            }
+
+            return selected;
+        }
+
+
+        function updateFilterBadge(selected) {
+
+            if (
+                allCheckbox.checked ||
+                selected.length === 0
+            ) {
+
+                countBadge.classList.remove("show");
+                countBadge.textContent = "";
+
+                return;
+            }
+
+
+            countBadge.textContent =
+                selected.length;
+
+            countBadge.classList.add("show");
+        }
+
+
+        function applyTeacherFilters() {
+
+            var selected =
+                getSelectedSubjects();
+
+
+            if (
+                !allCheckbox.checked &&
+                selected.length === 0
+            ) {
+
+                allCheckbox.checked =
+                    true;
+            }
+
+
+            if (allCheckbox.checked) {
+
+                for (var a = 0; a < cards.length; a++) {
+
+                    cards[a].style.display =
+                        "";
+                }
+
+                updateFilterBadge([]);
+
+                return;
+            }
+
+
+            for (var c = 0; c < cards.length; c++) {
+
+                var subject =
+                    cards[c].getAttribute(
+                        "data-subject"
+                    );
+
+
+                cards[c].style.display =
+                    selected.indexOf(subject) !== -1
+                        ? ""
+                        : "none";
+            }
+
+
+            updateFilterBadge(selected);
+        }
+
+
+        button.addEventListener(
+            "click",
+            function (event) {
+
+                event.stopPropagation();
+
+
+                if (
+                    menu.classList.contains("open")
+                ) {
+
+                    closeFilterMenu();
+                }
+                else {
+
+                    openFilterMenu();
+                }
+            }
+        );
+
+
+        menu.addEventListener(
+            "click",
+            function (event) {
+
+                event.stopPropagation();
+            }
+        );
+
+
+        allCheckbox.addEventListener(
+            "change",
+            function () {
+
+                if (this.checked) {
+
+                    for (
+                        var i = 0;
+                        i < checkboxes.length;
+                        i++
+                    ) {
+
+                        if (
+                            checkboxes[i].value !== "All"
+                        ) {
+
+                            checkboxes[i].checked =
+                                false;
+                        }
+                    }
+                }
+
+                applyTeacherFilters();
+            }
+        );
+
+
+        for (
+            var i = 0;
+            i < checkboxes.length;
+            i++
+        ) {
+
+            if (
+                checkboxes[i].value === "All"
+            ) {
+
+                continue;
+            }
+
+
+            checkboxes[i].addEventListener(
+                "change",
+                function () {
+
+                    if (this.checked) {
+
+                        allCheckbox.checked =
+                            false;
+                    }
+
+
+                    var selected =
+                        getSelectedSubjects();
+
+
+                    if (selected.length === 0) {
+
+                        allCheckbox.checked =
+                            true;
+                    }
+
+
+                    applyTeacherFilters();
+                }
+            );
+        }
+
+
+        clearButton.addEventListener(
+            "click",
+            function () {
+
+                for (
+                    var i = 0;
+                    i < checkboxes.length;
+                    i++
+                ) {
+
+                    checkboxes[i].checked =
+                        checkboxes[i].value === "All";
+                }
+
+
+                applyTeacherFilters();
+            }
+        );
+
+
+        document.addEventListener(
+            "click",
+            function (event) {
+
+                if (
+                    wrap &&
+                    !wrap.contains(event.target)
+                ) {
+
+                    closeFilterMenu();
+                }
+            }
+        );
+
+
+        applyTeacherFilters();
+
+    })();
+
+
+    document.addEventListener(
+        "keydown",
+        function (event) {
+
+            if (event.key === "Escape") {
+
+                var filterMenu =
+                    document.getElementById("teacherFilterMenu");
+
+                var filterButton =
+                    document.getElementById("teacherFilterButton");
+
+
+                if (
+                    filterMenu &&
+                    filterMenu.classList.contains("open")
+                ) {
+
+                    filterMenu.classList.remove("open");
+
+                    if (filterButton) {
+                        filterButton.classList.remove("open");
+                        filterButton.setAttribute("aria-expanded", "false");
+                    }
+
+                    return;
+                }
+
+
+                closeAllTeacherPanels();
+            }
+        }
+    );
+
+</script>

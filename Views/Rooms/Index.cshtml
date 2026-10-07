@@ -1,0 +1,4057 @@
+﻿@model IEnumerable<lamia12771.Models.Room>
+
+@{ ViewBag.Title = "Rooms";
+
+    var rooms = Model.ToList();
+
+    var totalRooms = rooms.Count;
+    var availableRooms = rooms.Count(r => r.Status == "Available");
+    var inUseRooms = rooms.Count(r => r.Status == "In Use");
+
+    bool isAdmin =
+        Session["IsAdmin"] != null
+        && Session["IsAdmin"] is bool
+        && (bool)Session["IsAdmin"]; }
+
+<style>
+
+    /* =========================================================
+       ROOMS PAGE
+       ========================================================= */
+
+    .rooms-page {
+        width: 100%;
+        min-height: 100vh;
+        padding: 70px 0 90px;
+        background: #ffffff;
+        color: #171717;
+        font-family: Arial, sans-serif;
+    }
+
+    .rooms-container {
+        width: 88%;
+        max-width: 1380px;
+        margin: 0 auto;
+    }
+
+
+    /* =========================================================
+       HEADER
+       ========================================================= */
+
+    .rooms-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+        gap: 40px;
+        padding-bottom: 32px;
+        border-bottom: 1px solid #e1e3e4;
+    }
+
+    .rooms-heading-small {
+        margin-bottom: 10px;
+        color: #3E4348;
+        font-size: 10px;
+        font-weight: 600;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+    }
+
+    .rooms-header h1 {
+        margin: 0;
+        font-family: 'Times New Roman', serif;
+        font-size: 48px;
+        font-weight: 400;
+        color: #171717;
+    }
+
+    .rooms-header p {
+        max-width: 500px;
+        margin: 12px 0 0;
+        font-size: 12px;
+        line-height: 1.8;
+        color: #777777;
+    }
+
+
+    /* =========================================================
+       SUMMARY
+       ========================================================= */
+
+    .rooms-summary {
+        display: flex;
+        align-items: center;
+        gap: 35px;
+    }
+
+    .summary-item {
+        min-width: 85px;
+    }
+
+    .summary-number {
+        display: block;
+        font-family: 'Times New Roman', serif;
+        font-size: 32px;
+        line-height: 1;
+        color: #171717;
+    }
+
+    .summary-item.available .summary-number {
+        color: #3E4348;
+    }
+
+    .summary-label {
+        display: block;
+        margin-top: 7px;
+        font-size: 9px;
+        letter-spacing: .8px;
+        text-transform: uppercase;
+        color: #888888;
+    }
+
+
+    /* =========================================================
+       TOOLBAR
+       ========================================================= */
+
+    .rooms-toolbar {
+        margin: 34px 0 32px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 25px;
+    }
+
+    .room-filter-wrap {
+        position: relative;
+        display: inline-flex;
+        align-items: center;
+    }
+
+    .room-filter-trigger {
+        position: relative;
+        width: 44px;
+        height: 44px;
+        padding: 0;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid #d8dadd;
+        border-radius: 8px;
+        background: #ffffff;
+        color: #3E4348;
+        cursor: pointer;
+        transition: .25s ease;
+    }
+
+        .room-filter-trigger:hover,
+        .room-filter-trigger.open {
+            border-color: #3E4348;
+            background: #f4f4f3;
+        }
+
+        .room-filter-trigger svg {
+            width: 21px;
+            height: 21px;
+            display: block;
+        }
+
+    .room-filter-count {
+        position: absolute;
+        top: -6px;
+        right: -6px;
+        min-width: 18px;
+        height: 18px;
+        padding: 0 5px;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        border: 2px solid #ffffff;
+        border-radius: 20px;
+        background: #3E4348;
+        color: #ffffff;
+        font-size: 8px;
+        font-weight: 700;
+        line-height: 1;
+    }
+
+        .room-filter-count.show {
+            display: inline-flex;
+        }
+
+    .room-filter-menu {
+        position: absolute;
+        top: calc(100% + 10px);
+        left: 0;
+        z-index: 200;
+        width: 255px;
+        max-width: calc(100vw - 40px);
+        padding: 15px;
+        border: 1px solid #d7dadd;
+        border-radius: 10px;
+        background: #ffffff;
+        box-shadow: 0 18px 45px rgba(32,36,40,.14);
+        opacity: 0;
+        visibility: hidden;
+        transform: translateY(-5px);
+        transition: .2s ease;
+    }
+
+        .room-filter-menu.open {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+    .room-filter-menu-head {
+        margin-bottom: 10px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid #eceeef;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+    }
+
+    .room-filter-menu-title {
+        color: #3E4348;
+        font-size: 9px;
+        font-weight: 700;
+        letter-spacing: 1.2px;
+        text-transform: uppercase;
+    }
+
+    .room-filter-clear {
+        padding: 0;
+        border: 0;
+        background: transparent;
+        color: #777777;
+        font-size: 9px;
+        text-transform: uppercase;
+        cursor: pointer;
+    }
+
+        .room-filter-clear:hover {
+            color: #3E4348;
+        }
+
+    .room-filter-option {
+        min-height: 36px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        cursor: pointer;
+        color: #44494d;
+        font-size: 11px;
+        user-select: none;
+    }
+
+        .room-filter-option + .room-filter-option {
+            border-top: 1px solid #f0f1f1;
+        }
+
+        .room-filter-option input {
+            position: absolute;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+    .room-filter-check {
+        width: 16px;
+        height: 16px;
+        flex: 0 0 16px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid #bfc3c5;
+        border-radius: 3px;
+        background: #ffffff;
+        transition: .2s ease;
+    }
+
+    .room-filter-option input:checked + .room-filter-check {
+        border-color: #3E4348;
+        background: #3E4348;
+    }
+
+        .room-filter-option input:checked + .room-filter-check:after {
+            content: "";
+            width: 7px;
+            height: 4px;
+            border-left: 2px solid #ffffff;
+            border-bottom: 2px solid #ffffff;
+            transform: rotate(-45deg) translateY(-1px);
+        }
+
+    .room-filter-option input:focus + .room-filter-check {
+        box-shadow: 0 0 0 2px rgba(62,67,72,.12);
+    }
+
+    .room-filter-option-text {
+        flex: 1;
+        min-width: 0;
+    }
+
+
+    /* =========================================================
+       ADD BUTTON
+       ========================================================= */
+
+    .add-room-button {
+        display: inline-block;
+        padding: 11px 20px;
+        background: #3E4348;
+        border: 1px solid #3E4348;
+        color: #ffffff;
+        font-size: 10px;
+        letter-spacing: .7px;
+        text-transform: uppercase;
+        text-decoration: none;
+        cursor: pointer;
+        transition: .25s ease;
+    }
+
+        .add-room-button:hover,
+        .add-room-button:focus {
+            background: #2F3438;
+            border-color: #2F3438;
+            color: #ffffff;
+            text-decoration: none;
+        }
+
+
+    /* =========================================================
+       ROOM CARDS
+       ========================================================= */
+
+    .rooms-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 25px;
+    }
+
+    .room-card {
+        position: relative;
+        overflow: hidden;
+        background: #ffffff;
+        border: 1px solid #e1e3e4;
+        cursor: pointer;
+        transition: transform .3s ease, box-shadow .3s ease, border-color .3s ease;
+    }
+
+        .room-card:hover {
+            transform: translateY(-6px);
+            border-color: #737A80;
+            box-shadow: 0 18px 45px rgba(32,36,40,.12);
+        }
+
+    .room-image-wrap {
+        position: relative;
+        width: 100%;
+        height: 240px;
+        overflow: hidden;
+        background: #eeeeec;
+    }
+
+    .room-image {
+        width: 100%;
+        height: 100%;
+        display: block;
+        object-fit: cover;
+        object-position: center;
+        transition: transform .45s ease;
+    }
+
+    .room-card:hover .room-image {
+        transform: scale(1.035);
+    }
+
+    .room-status {
+        position: absolute;
+        top: 15px;
+        left: 15px;
+        z-index: 3;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 8px 13px;
+        background: rgba(62, 67, 72, 0.94);
+        border: 1px solid rgba(255, 255, 255, 0.22);
+        border-radius: 7px;
+        color: #ffffff;
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 0.8px;
+        text-transform: uppercase;
+        box-shadow: 0 3px 10px rgba(0, 0, 0, 0.10);
+    }
+
+    .status-dot {
+        display: none;
+    }
+
+
+
+    .room-code {
+        position: absolute;
+        right: 14px;
+        bottom: 14px;
+        padding: 6px 10px;
+        background: rgba(27,30,34,.88);
+        color: #ffffff;
+        font-size: 10px;
+        letter-spacing: .8px;
+    }
+
+    .room-card-content {
+        padding: 20px 20px 18px;
+    }
+
+    .room-card-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 15px;
+    }
+
+    .room-title {
+        margin: 0;
+        font-family: 'Times New Roman', serif;
+        font-size: 22px;
+        font-weight: 400;
+        color: #171717;
+    }
+
+    .room-type {
+        margin-top: 6px;
+        color: #999999;
+        font-size: 9px;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+    }
+
+    .room-capacity {
+        text-align: right;
+    }
+
+    .capacity-number {
+        display: block;
+        font-family: 'Times New Roman', serif;
+        font-size: 24px;
+        color: #3E4348;
+    }
+
+    .capacity-label {
+        display: block;
+        margin-top: 3px;
+        font-size: 8px;
+        letter-spacing: .8px;
+        text-transform: uppercase;
+        color: #999999;
+    }
+
+    .room-card-footer {
+        margin-top: 17px;
+        padding-top: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 15px;
+        border-top: 1px solid #eceeef;
+    }
+
+    .room-area-label {
+        font-size: 10px;
+        color: #747474;
+    }
+
+    .room-view-text {
+        color: #3E4348;
+        font-size: 9px;
+        font-weight: 600;
+        letter-spacing: .8px;
+        text-transform: uppercase;
+    }
+
+    .rooms-empty {
+        grid-column: 1 / -1;
+        padding: 70px 20px;
+        text-align: center;
+        border: 1px solid #e1e3e4;
+        color: #777777;
+    }
+
+
+    /* =========================================================
+       OVERLAY
+       ========================================================= */
+
+    .room-overlay {
+        position: fixed;
+        inset: 0;
+        z-index: 9998;
+        background: rgba(10,11,13,.64);
+        backdrop-filter: blur(2px);
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity .3s ease;
+    }
+
+        .room-overlay.open {
+            opacity: 1;
+            visibility: visible;
+        }
+
+
+    /* =========================================================
+       ALL PANELS - WHITE THEME
+       ========================================================= */
+
+    .room-panel,
+    .edit-panel,
+    .add-panel,
+    .details-panel {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        z-index: 9999;
+        width: 660px;
+        max-width: 92%;
+        max-height: 90vh;
+        overflow-y: auto;
+        overflow-x: hidden;
+        background: #ffffff !important;
+        color: #202326 !important;
+        border: 1px solid #c8cbcd;
+        border-radius: 18px;
+        box-shadow: 0 30px 90px rgba(0,0,0,.28);
+        opacity: 0;
+        visibility: hidden;
+        transform: translate(-50%, -47%) scale(.97);
+        transition: opacity .28s ease, transform .32s ease, visibility .28s ease;
+    }
+
+        .room-panel.open,
+        .edit-panel.open,
+        .add-panel.open,
+        .details-panel.open {
+            opacity: 1;
+            visibility: visible;
+            transform: translate(-50%, -50%) scale(1);
+        }
+
+
+        /* =========================================================
+       PANEL SCROLLBAR
+       ========================================================= */
+
+        .room-panel::-webkit-scrollbar,
+        .edit-panel::-webkit-scrollbar,
+        .add-panel::-webkit-scrollbar,
+        .details-panel::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .room-panel::-webkit-scrollbar-track,
+        .edit-panel::-webkit-scrollbar-track,
+        .add-panel::-webkit-scrollbar-track,
+        .details-panel::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .room-panel::-webkit-scrollbar-thumb,
+        .edit-panel::-webkit-scrollbar-thumb,
+        .add-panel::-webkit-scrollbar-thumb,
+        .details-panel::-webkit-scrollbar-thumb {
+            background: #a5a9ac;
+            border-radius: 20px;
+        }
+
+
+    /* =========================================================
+       DETAILS IMAGE
+       ========================================================= */
+
+    .panel-image-wrap {
+        position: relative;
+        width: 100%;
+        height: 250px;
+        overflow: hidden;
+        background: #eeeeec;
+        border-radius: 18px 18px 0 0;
+    }
+
+    .panel-image {
+        width: 100%;
+        height: 100%;
+        display: block;
+        object-fit: cover;
+        object-position: center;
+    }
+
+    .panel-close {
+        position: absolute;
+        z-index: 3;
+        left: 20px;
+        top: 20px;
+        width: 42px;
+        height: 42px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid rgba(255,255,255,.20);
+        border-radius: 50%;
+        background: rgba(47,52,56,.93);
+        color: #ffffff;
+        font-size: 23px;
+        line-height: 1;
+        cursor: pointer;
+        transition: .2s ease;
+    }
+
+        .panel-close:hover {
+            background: #202326;
+            transform: scale(1.05);
+        }
+
+
+    /* =========================================================
+       MAIN DETAILS BODY
+       ========================================================= */
+
+    .panel-body {
+        padding: 28px 30px 34px;
+        background: #ffffff !important;
+        color: #202326 !important;
+    }
+
+    .panel-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 24px;
+    }
+
+    .panel-heading h2 {
+        margin: 0;
+        font-family: 'Times New Roman', serif;
+        font-size: 31px;
+        font-weight: 400;
+        color: #171717 !important;
+    }
+
+    .panel-code {
+        margin-top: 7px;
+        color: #73787c !important;
+        font-size: 11px;
+        letter-spacing: 1px;
+    }
+
+    .panel-status {
+        padding: 8px 13px;
+        border: 1px solid #d6d8da;
+        border-radius: 20px;
+        background: #eeeeec !important;
+        color: #3E4348 !important;
+        font-size: 9px;
+        font-weight: 700;
+        letter-spacing: .7px;
+        text-transform: uppercase;
+        white-space: nowrap;
+    }
+
+        .panel-status.in-use {
+            background: #e2e3e4 !important;
+            color: #62676b !important;
+        }
+
+
+    /* =========================================================
+       ROOM STATS - GRAY BOXES
+       ========================================================= */
+
+    .panel-stats {
+        margin: 26px 0 22px;
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 11px;
+    }
+
+    .panel-stat {
+        min-height: 90px;
+        padding: 17px 10px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        background: #eeeeec !important;
+        border: 1px solid #d1d4d6;
+        border-radius: 12px;
+    }
+
+    .panel-stat-value {
+        display: block;
+        font-family: 'Times New Roman', serif;
+        font-size: 23px;
+        color: #171717 !important;
+    }
+
+    .panel-stat-label {
+        display: block;
+        margin-top: 7px;
+        color: #6e7478 !important;
+        font-size: 8px;
+        font-weight: 600;
+        letter-spacing: .8px;
+        text-transform: uppercase;
+    }
+
+
+    /* =========================================================
+       STATUS
+       ========================================================= */
+
+    .panel-current-status {
+        padding: 4px 0 22px;
+        border-bottom: 1px solid #d5d7d9;
+    }
+
+    .panel-current-status-title {
+        margin-bottom: 7px;
+        color: #60666a !important;
+        font-size: 9px;
+        font-weight: 600;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+    }
+
+    .panel-current-status-value {
+        color: #24282b !important;
+        font-size: 13px;
+    }
+
+
+    /* =========================================================
+       PANEL SECTIONS
+       ========================================================= */
+
+    .panel-section {
+        margin-top: 23px;
+    }
+
+    .panel-section-title {
+        margin-bottom: 9px;
+        color: #555b5f !important;
+        font-size: 9px;
+        font-weight: 700;
+        letter-spacing: 1.2px;
+        text-transform: uppercase;
+    }
+
+    .panel-section p {
+        margin: 0;
+        color: #4f5559 !important;
+        font-size: 13px;
+        line-height: 1.85;
+    }
+
+
+    /* =========================================================
+       FACILITIES
+       ========================================================= */
+
+    .panel-facilities {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 9px;
+    }
+
+    .facility-tag {
+        padding: 8px 12px;
+        background: #eeeeec !important;
+        border: 1px solid #d1d4d6;
+        border-radius: 7px;
+        color: #303438 !important;
+        font-size: 9px;
+        font-weight: 600;
+    }
+
+
+    /* =========================================================
+       MAIN PANEL ACTIONS
+       ========================================================= */
+
+    .panel-actions {
+        margin-top: 28px;
+        padding-top: 20px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        border-top: 1px solid #d5d7d9;
+    }
+
+    .panel-action {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 11px 17px;
+        border: 1px solid #c5c8ca;
+        background: #ffffff;
+        color: #3f4447;
+        font-size: 9px;
+        font-weight: 700;
+        letter-spacing: .8px;
+        text-transform: uppercase;
+        text-decoration: none;
+        cursor: pointer;
+        transition: .2s ease;
+    }
+
+        .panel-action:hover {
+            border-color: #3E4348;
+            color: #3E4348;
+            text-decoration: none;
+        }
+
+        .panel-action.edit {
+            background: #3E4348;
+            border-color: #3E4348;
+            color: #ffffff;
+        }
+
+            .panel-action.edit:hover {
+                background: #2F3438;
+                border-color: #2F3438;
+                color: #ffffff;
+            }
+
+
+    /* =========================================================
+       ADD / EDIT / DELETE / DETAILS HEADERS
+       ========================================================= */
+
+    .edit-header {
+        position: relative;
+        padding: 28px 30px 23px;
+        background: #ffffff !important;
+        border-bottom: 1px solid #d1d4d6;
+    }
+
+    .edit-header-small {
+        margin-bottom: 7px;
+        color: #646a6e !important;
+        font-size: 9px;
+        font-weight: 700;
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+    }
+
+    .edit-header h2 {
+        margin: 0;
+        font-family: 'Times New Roman', serif;
+        font-size: 31px;
+        font-weight: 400;
+        color: #171717 !important;
+    }
+
+    .edit-header p {
+        max-width: 500px;
+        margin: 7px 0 0;
+        color: #6f7579 !important;
+        font-size: 11px;
+        line-height: 1.7;
+    }
+
+
+    /* =========================================================
+       EDIT CLOSE
+       ========================================================= */
+
+    .edit-close {
+        position: absolute;
+        right: 25px;
+        top: 27px;
+        width: 42px;
+        height: 42px;
+        border: 1px solid #3E4348;
+        border-radius: 50%;
+        background: #3E4348;
+        color: #ffffff;
+        font-size: 21px;
+        cursor: pointer;
+        transition: .2s ease;
+    }
+
+        .edit-close:hover {
+            background: #2F3438;
+            border-color: #2F3438;
+        }
+
+
+    /* =========================================================
+       FORM BODY
+       ========================================================= */
+
+    .edit-body {
+        padding: 26px 30px 32px;
+        background: #ffffff !important;
+        color: #202326 !important;
+    }
+
+    .edit-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 17px;
+    }
+
+    .edit-field {
+        display: flex;
+        flex-direction: column;
+        gap: 7px;
+    }
+
+        .edit-field.full {
+            grid-column: 1 / -1;
+        }
+
+        .edit-field label {
+            margin: 0;
+            color: #555b5f !important;
+            font-size: 9px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+
+    /* =========================================================
+       FORM INPUTS - GRAY BOXES
+       ========================================================= */
+
+    .edit-input,
+    .edit-select,
+    .edit-textarea {
+        width: 100%;
+        box-sizing: border-box;
+        border: 1px solid #c9ccce;
+        border-radius: 8px;
+        outline: none;
+        background: #eeeeec !important;
+        color: #202326 !important;
+        font-family: Arial, sans-serif;
+        font-size: 12px;
+        transition: .2s ease;
+    }
+
+    .edit-input,
+    .edit-select {
+        height: 46px;
+        padding: 0 13px;
+    }
+
+    .edit-textarea {
+        min-height: 105px;
+        padding: 12px 13px;
+        resize: vertical;
+        line-height: 1.6;
+    }
+
+        .edit-input::placeholder,
+        .edit-textarea::placeholder {
+            color: #8a8f93;
+        }
+
+        .edit-input:focus,
+        .edit-select:focus,
+        .edit-textarea:focus {
+            border-color: #3E4348;
+            background: #f4f4f3 !important;
+            box-shadow: 0 0 0 2px rgba(62,67,72,.10);
+        }
+
+    .edit-select option {
+        background: #ffffff;
+        color: #171717;
+    }
+
+    .edit-help {
+        margin-top: 3px;
+        color: #777d81 !important;
+        font-size: 8px;
+        line-height: 1.5;
+    }
+
+    .room-other-type-field {
+        display: none;
+    }
+
+        .room-other-type-field.open {
+            display: flex;
+        }
+
+
+
+    /* =========================================================
+       FORM ACTIONS
+       ========================================================= */
+
+    .edit-actions {
+        margin-top: 25px;
+        padding-top: 20px;
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+        border-top: 1px solid #d1d4d6;
+    }
+
+    .edit-cancel,
+    .edit-save {
+        min-width: 115px;
+        padding: 11px 18px;
+        font-size: 9px;
+        font-weight: 700;
+        letter-spacing: .8px;
+        text-transform: uppercase;
+        cursor: pointer;
+        transition: .2s ease;
+    }
+
+    .edit-cancel {
+        border: 1px solid #bfc3c5;
+        background: #ffffff;
+        color: #464b4f;
+    }
+
+        .edit-cancel:hover {
+            border-color: #3E4348;
+            color: #3E4348;
+        }
+
+    .edit-save {
+        border: 1px solid #3E4348;
+        background: #3E4348;
+        color: #ffffff;
+    }
+
+        .edit-save:hover {
+            background: #2F3438;
+            border-color: #2F3438;
+        }
+
+
+    /* =========================================================
+       FULL DETAILS
+       ========================================================= */
+
+    .details-list {
+        margin-top: 24px;
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+    }
+
+    .details-item {
+        padding: 15px;
+        background: #eeeeec !important;
+        border: 1px solid #d1d4d6;
+        border-radius: 10px;
+    }
+
+        .details-item.full {
+            grid-column: 1 / -1;
+        }
+
+    .details-label {
+        display: block;
+        margin-bottom: 7px;
+        color: #666c70 !important;
+        font-size: 8px;
+        font-weight: 700;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+    }
+
+    .details-value {
+        display: block;
+        color: #202326 !important;
+        font-size: 13px;
+        line-height: 1.7;
+        word-break: break-word;
+    }
+
+
+    /* =========================================================
+       DELETE PANEL
+       ========================================================= */
+
+    #deletePanel .panel-section {
+        padding: 16px;
+        background: #f4f4f3;
+        border: 1px solid #d7d9db;
+        border-radius: 9px;
+    }
+
+    #deletePanel .panel-section-title {
+        color: #7e4444 !important;
+    }
+
+    #deletePanel .panel-section p {
+        color: #44494d !important;
+    }
+
+    #deletePanel .edit-save {
+        background: #b74a4a !important;
+        border-color: #b74a4a !important;
+        color: #ffffff !important;
+    }
+
+        #deletePanel .edit-save:hover {
+            background: #9f3d3d !important;
+            border-color: #9f3d3d !important;
+        }
+
+
+    /* =========================================================
+       FORCE WHITE PANEL THEME
+       ========================================================= */
+
+    #roomPanel,
+    #roomPanel .panel-body,
+    #editPanel,
+    #editPanel .edit-header,
+    #editPanel .edit-body,
+    #addPanel,
+    #addPanel .edit-header,
+    #addPanel .edit-body,
+    #detailsPanel,
+    #detailsPanel .edit-header,
+    #detailsPanel .edit-body,
+    #deletePanel,
+    #deletePanel .edit-header,
+    #deletePanel .edit-body {
+        background-color: #ffffff !important;
+        color: #202326 !important;
+    }
+
+
+    /* =========================================================
+       RESPONSIVE
+       ========================================================= */
+
+    @@media (max-width: 1050px) {
+
+        .rooms-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+
+
+    @@media (max-width: 768px) {
+
+        .rooms-page {
+            padding-top: 45px;
+        }
+
+        .rooms-container {
+            width: 92%;
+        }
+
+        .rooms-header {
+            flex-direction: column;
+        }
+
+            .rooms-header h1 {
+                font-size: 39px;
+            }
+
+        .rooms-summary {
+            width: 100%;
+            justify-content: space-between;
+        }
+
+        .rooms-toolbar {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .rooms-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .room-image-wrap {
+            height: 260px;
+        }
+
+        .add-room-button {
+            width: 100%;
+            box-sizing: border-box;
+            text-align: center;
+        }
+
+        .room-panel,
+        .edit-panel,
+        .add-panel,
+        .details-panel {
+            width: 92%;
+            max-height: 92vh;
+        }
+    }
+
+
+    @@media (max-width: 560px) {
+
+        .rooms-header h1 {
+            font-size: 34px;
+        }
+
+        .summary-number {
+            font-size: 27px;
+        }
+
+        .room-image-wrap {
+            height: 220px;
+        }
+
+        .room-panel,
+        .edit-panel,
+        .add-panel,
+        .details-panel {
+            width: 95%;
+            border-radius: 14px;
+        }
+
+        .panel-image-wrap {
+            height: 210px;
+            border-radius: 14px 14px 0 0;
+        }
+
+        .panel-body,
+        .edit-body {
+            padding: 24px 20px 30px;
+        }
+
+        .panel-stats,
+        .edit-grid,
+        .details-list {
+            grid-template-columns: 1fr;
+        }
+
+        .edit-field.full,
+        .details-item.full {
+            grid-column: auto;
+        }
+
+        .panel-actions,
+        .edit-actions {
+            flex-direction: column;
+        }
+
+        .panel-action,
+        .edit-cancel,
+        .edit-save {
+            width: 100%;
+            box-sizing: border-box;
+            text-align: center;
+        }
+    }
+</style>
+
+
+<div class="rooms-page">
+
+    <div class="rooms-container">
+
+
+        <!-- =====================================================
+             HEADER
+             ===================================================== -->
+
+        <div class="rooms-header">
+
+            <div>
+
+                <div class="rooms-heading-small">
+                    Campus Facilities
+                </div>
+
+                <h1>
+                    Rooms &amp; Spaces
+                </h1>
+
+                <p>
+                    Explore the learning spaces, laboratories,
+                    meeting areas, and university facilities
+                    available across Aurelia University.
+                </p>
+
+            </div>
+
+
+            <div class="rooms-summary">
+
+                <div class="summary-item">
+
+                    <span class="summary-number">
+                        @totalRooms
+                    </span>
+
+                    <span class="summary-label">
+                        Total Rooms
+                    </span>
+
+                </div>
+
+
+                <div class="summary-item available">
+
+                    <span class="summary-number">
+                        @availableRooms
+                    </span>
+
+                    <span class="summary-label">
+                        Available
+                    </span>
+
+                </div>
+
+
+                <div class="summary-item">
+
+                    <span class="summary-number">
+                        @inUseRooms
+                    </span>
+
+                    <span class="summary-label">
+                        In Use
+                    </span>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- =====================================================
+             TOOLBAR
+             ===================================================== -->
+
+        <div class="rooms-toolbar">
+
+            <div class="room-filter-wrap"
+                 id="roomFilterWrap">
+
+                <button type="button"
+                        class="room-filter-trigger"
+                        id="roomFilterButton"
+                        aria-label="Filter rooms by type"
+                        aria-expanded="false"
+                        aria-controls="roomFilterMenu">
+
+                    <svg viewBox="0 0 24 24"
+                         aria-hidden="true">
+                        <path d="M4 5h16l-6.3 7.1v5.2l-3.4 1.8v-7L4 5z"
+                              fill="none"
+                              stroke="currentColor"
+                              stroke-width="1.8"
+                              stroke-linejoin="round" />
+                        <path d="M16.5 8.5h3.5M15.5 12h4.5M17 15.5h3"
+                              fill="none"
+                              stroke="currentColor"
+                              stroke-width="1.8"
+                              stroke-linecap="round" />
+                    </svg>
+
+                    <span class="room-filter-count"
+                          id="roomFilterCount">
+                    </span>
+
+                </button>
+
+
+                <div class="room-filter-menu"
+                     id="roomFilterMenu">
+
+                    <div class="room-filter-menu-head">
+
+                        <span class="room-filter-menu-title">
+                            Filter by Room Type
+                        </span>
+
+                        <button type="button"
+                                class="room-filter-clear"
+                                id="roomFilterClear">
+                            Clear
+                        </button>
+
+                    </div>
+
+
+                    <label class="room-filter-option">
+                        <input type="checkbox"
+                               class="room-filter-checkbox"
+                               value="All"
+                               id="roomFilterAll"
+                               checked />
+                        <span class="room-filter-check"></span>
+                        <span class="room-filter-option-text">All Rooms</span>
+                    </label>
+
+
+                    <label class="room-filter-option">
+                        <input type="checkbox"
+                               class="room-filter-checkbox"
+                               value="Lab" />
+                        <span class="room-filter-check"></span>
+                        <span class="room-filter-option-text">Labs</span>
+                    </label>
+
+
+                    <label class="room-filter-option">
+                        <input type="checkbox"
+                               class="room-filter-checkbox"
+                               value="Lecture" />
+                        <span class="room-filter-check"></span>
+                        <span class="room-filter-option-text">Lecture</span>
+                    </label>
+
+
+                    <label class="room-filter-option">
+                        <input type="checkbox"
+                               class="room-filter-checkbox"
+                               value="Library" />
+                        <span class="room-filter-check"></span>
+                        <span class="room-filter-option-text">Library</span>
+                    </label>
+
+
+                    <label class="room-filter-option">
+                        <input type="checkbox"
+                               class="room-filter-checkbox"
+                               value="Meeting" />
+                        <span class="room-filter-check"></span>
+                        <span class="room-filter-option-text">Meeting</span>
+                    </label>
+
+
+                    <label class="room-filter-option">
+                        <input type="checkbox"
+                               class="room-filter-checkbox"
+                               value="Other" />
+                        <span class="room-filter-check"></span>
+                        <span class="room-filter-option-text">Other</span>
+                    </label>
+
+                </div>
+
+            </div>
+
+
+            @if (isAdmin)
+            {
+<button type="button"
+        class="add-room-button"
+        onclick="openAddPanel()">
+    Add New Room
+</button>   }
+
+        </div>
+
+
+        <!-- =====================================================
+             CARDS
+             ===================================================== -->
+
+        <div class="rooms-grid">
+
+            @if (rooms.Count == 0)
+            {
+<div class="rooms-empty">
+    No rooms have been added yet.
+</div> }
+else
+{
+for (int i = 0; i < rooms.Count; i++)
+{
+    var room = rooms[i];
+
+<article class="room-card"
+         data-category="@room.RoomType"
+         onclick="openRoomPanel(@i)">
+
+    <div class="room-image-wrap">
+
+        @if (!string.IsNullOrWhiteSpace(room.ImagePath))
+        {
+<img class="room-image"
+     src="@room.ImagePath"
+     alt="@room.RoomName"
+     onerror="this.style.display='none';" />}
+
+        <div class="room-status @(room.Status == "In Use" ? "in-use" : "")">
+
+            <span class="status-dot"></span>
+
+            @room.Status
+
+        </div>
+
+
+        <div class="room-code">
+            @room.RoomNumber
+        </div>
+
+    </div>
+
+
+    <div class="room-card-content">
+
+        <div class="room-card-top">
+
+            <div>
+
+                <h3 class="room-title">
+                    @room.RoomName
+                </h3>
+
+                <div class="room-type">
+                    @room.RoomType
+                </div>
+
+            </div>
+
+
+            <div class="room-capacity">
+
+                <span class="capacity-number">
+                    @room.Capacity
+                </span>
+
+                <span class="capacity-label">
+                    Capacity
+                </span>
+
+            </div>
+
+        </div>
+
+
+        <div class="room-card-footer">
+
+            <span class="room-area-label">
+                @room.Area m²
+            </span>
+
+            <span class="room-view-text">
+                View Details →
+            </span>
+
+        </div>
+
+    </div>
+
+</article>      }
+}
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- =========================================================
+     OVERLAY
+     ========================================================= -->
+
+<div class="room-overlay"
+     id="roomOverlay"
+     onclick="closeAllPanels()">
+</div>
+
+
+<!-- =========================================================
+     MAIN ROOM PANEL
+     ========================================================= -->
+
+<div class="room-panel"
+     id="roomPanel">
+
+    <div class="panel-image-wrap">
+
+        <img src=""
+             class="panel-image"
+             id="panelImage"
+             alt=""
+             onerror="this.style.display='none';" />
+
+        <button type="button"
+                class="panel-close"
+                onclick="closeAllPanels()">
+            ×
+        </button>
+
+    </div>
+
+
+    <div class="panel-body">
+
+        <div class="panel-top">
+
+            <div class="panel-heading">
+
+                <h2 id="panelTitle"></h2>
+
+                <div class="panel-code"
+                     id="panelCode">
+                </div>
+
+            </div>
+
+
+            <div class="panel-status"
+                 id="panelStatus">
+            </div>
+
+        </div>
+
+
+        <div class="panel-stats">
+
+            <div class="panel-stat">
+
+                <span class="panel-stat-value"
+                      id="panelType">
+                </span>
+
+                <span class="panel-stat-label">
+                    Room Type
+                </span>
+
+            </div>
+
+
+            <div class="panel-stat">
+
+                <span class="panel-stat-value"
+                      id="panelCapacity">
+                </span>
+
+                <span class="panel-stat-label">
+                    Capacity
+                </span>
+
+            </div>
+
+
+            <div class="panel-stat">
+
+                <span class="panel-stat-value"
+                      id="panelArea">
+                </span>
+
+                <span class="panel-stat-label">
+                    Area
+                </span>
+
+            </div>
+
+        </div>
+
+
+        <div class="panel-current-status">
+
+            <div class="panel-current-status-title">
+                Current Status
+            </div>
+
+            <div class="panel-current-status-value"
+                 id="panelCurrentStatus">
+            </div>
+
+        </div>
+
+
+        <div class="panel-section">
+
+            <div class="panel-section-title">
+                Description
+            </div>
+
+            <p id="panelDescription"></p>
+
+        </div>
+
+
+        <div class="panel-section">
+
+            <div class="panel-section-title">
+                Facilities
+            </div>
+
+            <div class="panel-facilities"
+                 id="panelFacilities">
+            </div>
+
+        </div>
+
+
+        <div class="panel-actions">
+
+            @if (isAdmin)
+            {
+<button type="button"
+        class="panel-action edit"
+        onclick="openEditPanel()">
+    Edit Room
+</button>   }
+
+
+            <button type="button"
+                    class="panel-action"
+                    onclick="openFullDetailsPanel()">
+                Full Details
+            </button>
+
+
+            @if (isAdmin)
+            {
+<button type="button"
+        class="panel-action"
+        onclick="openDeletePanel()">
+    Delete
+</button>   }
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- =========================================================
+     FULL DETAILS PANEL
+     ========================================================= -->
+
+<div class="details-panel"
+     id="detailsPanel">
+
+    <div class="edit-header">
+
+        <div class="edit-header-small">
+            Room Information
+        </div>
+
+        <h2 id="detailsTitle">
+            Room Details
+        </h2>
+
+        <p>
+            Complete information about the selected university room.
+        </p>
+
+        <button type="button"
+                class="edit-close"
+                onclick="backFromFullDetails()">
+            ×
+        </button>
+
+    </div>
+
+
+    <div class="edit-body">
+
+        <div class="details-list">
+
+            <div class="details-item">
+
+                <span class="details-label">
+                    Room Name
+                </span>
+
+                <span class="details-value"
+                      id="detailsRoomName">
+                </span>
+
+            </div>
+
+
+            <div class="details-item">
+
+                <span class="details-label">
+                    Room Number
+                </span>
+
+                <span class="details-value"
+                      id="detailsRoomNumber">
+                </span>
+
+            </div>
+
+
+            <div class="details-item">
+
+                <span class="details-label">
+                    Room Type
+                </span>
+
+                <span class="details-value"
+                      id="detailsRoomType">
+                </span>
+
+            </div>
+
+
+            <div class="details-item">
+
+                <span class="details-label">
+                    Status
+                </span>
+
+                <span class="details-value"
+                      id="detailsStatus">
+                </span>
+
+            </div>
+
+
+            <div class="details-item">
+
+                <span class="details-label">
+                    Capacity
+                </span>
+
+                <span class="details-value"
+                      id="detailsCapacity">
+                </span>
+
+            </div>
+
+
+            <div class="details-item">
+
+                <span class="details-label">
+                    Area
+                </span>
+
+                <span class="details-value"
+                      id="detailsArea">
+                </span>
+
+            </div>
+
+
+            <div class="details-item full">
+
+                <span class="details-label">
+                    Description
+                </span>
+
+                <span class="details-value"
+                      id="detailsDescription">
+                </span>
+
+            </div>
+
+
+            <div class="details-item full">
+
+                <span class="details-label">
+                    Facilities
+                </span>
+
+                <div class="panel-facilities"
+                     id="detailsFacilities">
+                </div>
+
+            </div>
+
+
+            <div class="details-item full">
+
+                <span class="details-label">
+                    Image Path
+                </span>
+
+                <span class="details-value"
+                      id="detailsImagePath">
+                </span>
+
+            </div>
+
+        </div>
+
+
+        <div class="edit-actions">
+
+            <button type="button"
+                    class="edit-cancel"
+                    onclick="backFromFullDetails()">
+                Back
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+<!-- =========================================================
+     EDIT PANEL
+     ========================================================= -->
+
+<div class="edit-panel"
+     id="editPanel">
+
+    <div class="edit-header">
+
+        <div class="edit-header-small">
+            Room Management
+        </div>
+
+        <h2>
+            Edit Room
+        </h2>
+
+        <p>
+            Update the room information, facilities,
+            status, capacity, and display image.
+        </p>
+
+        <button type="button"
+                class="edit-close"
+                onclick="closeAllPanels()">
+            ×
+        </button>
+
+    </div>
+
+
+    @using (Html.BeginForm(
+        "Edit",
+        "Rooms",
+        FormMethod.Post,
+        new { id = "editRoomForm" }))
+    {
+@Html.AntiForgeryToken()
+
+                <div class="edit-body">
+
+                    <input type="hidden"
+                           name="RoomId"
+                           id="editRoomId" />
+
+
+                    <div class="edit-grid">
+
+                        <!-- ROOM NAME -->
+
+                        <div class="edit-field">
+
+                            <label for="editRoomName">
+                                Room Name
+                            </label>
+
+                            <input type="text"
+                                   name="RoomName"
+                                   id="editRoomName"
+                                   class="edit-input"
+                                   required />
+
+                        </div>
+
+
+                        <!-- ROOM NUMBER -->
+
+                        <div class="edit-field">
+
+                            <label for="editRoomNumber">
+                                Room Number
+                            </label>
+
+                            <input type="text"
+                                   name="RoomNumber"
+                                   id="editRoomNumber"
+                                   class="edit-input"
+                                   required />
+
+                        </div>
+
+
+                        <!-- ROOM TYPE VALUE -->
+
+                        <input type="hidden"
+                               name="RoomType"
+                               id="editRoomTypeValue" />
+
+
+                        <!-- ROOM TYPE -->
+
+                        <div class="edit-field">
+
+                            <label for="editRoomType">
+                                Room Type
+                            </label>
+
+                            <select id="editRoomType"
+                                    class="edit-select"
+                                    required>
+
+                                <option value="Lecture Hall">
+                                    Lecture Hall
+                                </option>
+
+                                <option value="Computer Lab">
+                                    Computer Lab
+                                </option>
+
+                                <option value="Laboratory">
+                                    Laboratory
+                                </option>
+
+                                <option value="Library">
+                                    Library
+                                </option>
+
+                                <option value="Meeting Room">
+                                    Meeting Room
+                                </option>
+
+                                <option value="Other">
+                                    Other
+                                </option>
+
+                            </select>
+
+                        </div>
+
+
+                        <!-- OTHER ROOM TYPE - FULL WIDTH -->
+
+                        <div class="edit-field full room-other-type-field"
+                             id="editOtherRoomTypeField">
+
+                            <label for="editOtherRoomType">
+                                Enter Room Type
+                            </label>
+
+                            <input type="text"
+                                   id="editOtherRoomType"
+                                   class="edit-input"
+                                   placeholder="Example: Studio" />
+
+                        </div>
+
+
+                        <!-- STATUS -->
+
+                        <div class="edit-field">
+
+                            <label for="editStatus">
+                                Status
+                            </label>
+
+                            <select name="Status"
+                                    id="editStatus"
+                                    class="edit-select"
+                                    required>
+
+                                <option value="Available">
+                                    Available
+                                </option>
+
+                                <option value="In Use">
+                                    In Use
+                                </option>
+
+                            </select>
+
+                        </div>
+
+
+                        <!-- CAPACITY -->
+
+                        <div class="edit-field">
+
+                            <label for="editCapacity">
+                                Capacity
+                            </label>
+
+                            <input type="number"
+                                   name="Capacity"
+                                   id="editCapacity"
+                                   class="edit-input"
+                                   min="1"
+                                   required />
+
+                        </div>
+
+
+                        <!-- AREA -->
+
+                        <div class="edit-field">
+
+                            <label for="editArea">
+                                Area (m²)
+                            </label>
+
+                            <input type="number"
+                                   name="Area"
+                                   id="editArea"
+                                   class="edit-input"
+                                   min="1"
+                                   required />
+
+                        </div>
+
+
+                        <!-- DESCRIPTION + FACILITIES -->
+
+                        <div class="edit-field">
+
+                            <label for="editDescription">
+                                Description (Optional)
+                            </label>
+
+                            <textarea name="Description"
+                                      id="editDescription"
+                                      class="edit-textarea"></textarea>
+
+                        </div>
+
+
+                        <div class="edit-field">
+
+                            <label for="editFacilities">
+                                Facilities (Optional)
+                            </label>
+
+                            <textarea name="Facilities"
+                                      id="editFacilities"
+                                      class="edit-textarea"></textarea>
+
+                            <div class="edit-help">
+                                Separate facilities using | for example:
+                                Projector | Wi-Fi | Audio System
+                            </div>
+
+                        </div>
+
+
+                        <!-- IMAGE PATH - FULL WIDTH -->
+
+                        <div class="edit-field full">
+
+                            <label for="editImagePath">
+                                Image Path (Optional)
+                            </label>
+
+                            <input type="text"
+                                   name="ImagePath"
+                                   id="editImagePath"
+                                   class="edit-input" />
+
+                            <div class="edit-help">
+                                Example: /images/rooms/Computer Lab.jpg
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="edit-actions">
+
+                        <button type="button"
+                                class="edit-cancel"
+                                onclick="backToDetails()">
+                            Cancel
+                        </button>
+
+                        <button type="submit"
+                                class="edit-save">
+                            Save Changes
+                        </button>
+
+                    </div>
+
+                </div>}
+
+</div>
+
+
+<!-- =========================================================
+     ADD PANEL
+     ========================================================= -->
+
+<div class="add-panel"
+     id="addPanel">
+
+    <div class="edit-header">
+
+        <div class="edit-header-small">
+            Room Management
+        </div>
+
+        <h2>
+            Add New Room
+        </h2>
+
+        <p>
+            Add a new university room with its information,
+            facilities, status, capacity, and display image.
+        </p>
+
+        <button type="button"
+                class="edit-close"
+                onclick="closeAllPanels()">
+            ×
+        </button>
+
+    </div>
+
+
+    @using (Html.BeginForm(
+        "Create",
+        "Rooms",
+        FormMethod.Post,
+        new { id = "addRoomForm" }))
+    {
+        @Html.AntiForgeryToken()
+
+        <div class="edit-body">
+
+            <div class="edit-grid">
+
+                <!-- ROOM NAME -->
+
+                <div class="edit-field">
+
+                    <label>
+                        Room Name
+                    </label>
+
+                    <input type="text"
+                           name="RoomName"
+                           class="edit-input"
+                           placeholder="Example: Chemistry Lab"
+                           required />
+
+                </div>
+
+
+                <!-- ROOM NUMBER -->
+
+                <div class="edit-field">
+
+                    <label>
+                        Room Number
+                    </label>
+
+                    <input type="text"
+                           name="RoomNumber"
+                           class="edit-input"
+                           placeholder="Example: CH-01"
+                           required />
+
+                </div>
+
+
+                <!-- ROOM TYPE VALUE -->
+
+                <input type="hidden"
+                       name="RoomType"
+                       id="addRoomTypeValue" />
+
+
+                <!-- ROOM TYPE -->
+
+                <div class="edit-field">
+
+                    <label for="addRoomType">
+                        Room Type
+                    </label>
+
+                    <select id="addRoomType"
+                            class="edit-select"
+                            required>
+
+                        <option value="">
+                            Select Type
+                        </option>
+
+                        <option value="Lecture Hall">
+                            Lecture Hall
+                        </option>
+
+                        <option value="Computer Lab">
+                            Computer Lab
+                        </option>
+
+                        <option value="Laboratory">
+                            Laboratory
+                        </option>
+
+                        <option value="Library">
+                            Library
+                        </option>
+
+                        <option value="Meeting Room">
+                            Meeting Room
+                        </option>
+
+                        <option value="Other">
+                            Other
+                        </option>
+
+                    </select>
+
+                </div>
+
+
+                <!-- OTHER ROOM TYPE - FULL WIDTH -->
+
+                <div class="edit-field full room-other-type-field"
+                     id="addOtherRoomTypeField">
+
+                    <label for="addOtherRoomType">
+                        Enter Room Type
+                    </label>
+
+                    <input type="text"
+                           id="addOtherRoomType"
+                           class="edit-input"
+                           placeholder="Example: Studio" />
+
+                </div>
+
+
+                <!-- STATUS -->
+
+                <div class="edit-field">
+
+                    <label>
+                        Status
+                    </label>
+
+                    <select name="Status"
+                            class="edit-select"
+                            required>
+
+                        <option value="Available">
+                            Available
+                        </option>
+
+                        <option value="In Use">
+                            In Use
+                        </option>
+
+                    </select>
+
+                </div>
+
+
+                <!-- CAPACITY -->
+
+                <div class="edit-field">
+
+                    <label>
+                        Capacity
+                    </label>
+
+                    <input type="number"
+                           name="Capacity"
+                           class="edit-input"
+                           min="1"
+                           required />
+
+                </div>
+
+
+                <!-- AREA -->
+
+                <div class="edit-field">
+
+                    <label>
+                        Area (m²)
+                    </label>
+
+                    <input type="number"
+                           name="Area"
+                           class="edit-input"
+                           min="1"
+                           required />
+
+                </div>
+
+
+                <!-- DESCRIPTION + FACILITIES -->
+
+                <div class="edit-field">
+
+                    <label>
+                        Description (Optional)
+                    </label>
+
+                    <textarea name="Description"
+                              class="edit-textarea"
+                              placeholder="Write a short description about this room."></textarea>
+
+                </div>
+
+
+                <div class="edit-field">
+
+                    <label>
+                        Facilities (Optional)
+                    </label>
+
+                    <textarea name="Facilities"
+                              class="edit-textarea"
+                              placeholder="Projector | Wi-Fi | Audio System"></textarea>
+
+                    <div class="edit-help">
+                        Separate each facility using |
+                    </div>
+
+                </div>
+
+
+                <!-- IMAGE PATH - FULL WIDTH -->
+
+                <div class="edit-field full">
+
+                    <label>
+                        Image Path (Optional)
+                    </label>
+
+                    <input type="text"
+                           name="ImagePath"
+                           class="edit-input"
+                           placeholder="/images/rooms/Room Name.png" />
+
+                    <div class="edit-help">
+                        Add the image to images/rooms first, then enter its path here.
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <div class="edit-actions">
+
+                <button type="button"
+                        class="edit-cancel"
+                        onclick="closeAllPanels()">
+                    Cancel
+                </button>
+
+                <button type="submit"
+                        class="edit-save">
+                    Add Room
+                </button>
+
+            </div>
+
+        </div>
+    }
+
+</div>
+
+
+<!-- =========================================================
+     DELETE PANEL
+     ========================================================= -->
+
+<div class="edit-panel"
+     id="deletePanel">
+
+    <div class="edit-header">
+
+        <div class="edit-header-small">
+            Room Management
+        </div>
+
+        <h2>
+            Delete Room
+        </h2>
+
+        <p>
+            Please confirm that you want to permanently remove this room.
+        </p>
+
+        <button type="button"
+                class="edit-close"
+                onclick="backFromDelete()">
+            ×
+        </button>
+
+    </div>
+
+
+    @using (Html.BeginForm("Delete", "Rooms", FormMethod.Post, new { id = "deleteRoomForm" }))
+    {
+@Html.AntiForgeryToken()
+
+                <div class="edit-body">
+
+                    <input type="hidden"
+                           name="id"
+                           id="deleteRoomId" />
+
+
+                    <div class="details-list">
+
+                        <div class="details-item">
+
+                            <span class="details-label">
+                                Room Name
+                            </span>
+
+                            <span class="details-value"
+                                  id="deleteRoomName">
+                            </span>
+
+                        </div>
+
+
+                        <div class="details-item">
+
+                            <span class="details-label">
+                                Room Number
+                            </span>
+
+                            <span class="details-value"
+                                  id="deleteRoomNumber">
+                            </span>
+
+                        </div>
+
+
+                        <div class="details-item">
+
+                            <span class="details-label">
+                                Room Type
+                            </span>
+
+                            <span class="details-value"
+                                  id="deleteRoomType">
+                            </span>
+
+                        </div>
+
+
+                        <div class="details-item">
+
+                            <span class="details-label">
+                                Capacity
+                            </span>
+
+                            <span class="details-value"
+                                  id="deleteRoomCapacity">
+                            </span>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="panel-section">
+
+                        <div class="panel-section-title">
+                            Warning
+                        </div>
+
+                        <p>
+                            This room will be permanently deleted from the university database.
+                            This action cannot be undone.
+                        </p>
+
+                    </div>
+
+
+                    <div class="edit-actions">
+
+                        <button type="button"
+                                class="edit-cancel"
+                                onclick="backFromDelete()">
+                            Cancel
+                        </button>
+
+                        <button type="submit"
+                                class="edit-save">
+                            Delete Room
+                        </button>
+
+                    </div>
+
+                </div>}
+
+</div>
+
+
+<script>
+
+    var isAdmin = @isAdmin.ToString().ToLower();
+
+    /* =========================================================
+       ROOMS DATA
+       ========================================================= */
+
+    var roomsData = [
+
+    @for (int i = 0; i < rooms.Count; i++)
+    {
+        var room = rooms[i];
+
+        <text>
+        {
+            id:
+                @room.RoomId,
+
+            name:
+                '@Html.Raw(System.Web.HttpUtility.JavaScriptStringEncode(room.RoomName ?? ""))',
+
+            roomNumber:
+                '@Html.Raw(System.Web.HttpUtility.JavaScriptStringEncode(room.RoomNumber ?? ""))',
+
+            type:
+                '@Html.Raw(System.Web.HttpUtility.JavaScriptStringEncode(room.RoomType ?? ""))',
+
+            capacity:
+                '@room.Capacity',
+
+            area:
+                '@room.Area',
+
+            status:
+                '@Html.Raw(System.Web.HttpUtility.JavaScriptStringEncode(room.Status ?? ""))',
+
+            image:
+                '@Html.Raw(System.Web.HttpUtility.JavaScriptStringEncode(room.ImagePath ?? ""))',
+
+            description:
+                '@Html.Raw(System.Web.HttpUtility.JavaScriptStringEncode(room.Description ?? ""))',
+
+            facilities:
+                '@Html.Raw(System.Web.HttpUtility.JavaScriptStringEncode(room.Facilities ?? ""))'
+        }@(i < rooms.Count - 1 ? "," : "")
+        </text>
+    }
+
+    ];
+
+
+    var selectedRoom =
+        null;
+
+
+    /* =========================================================
+       OPEN MAIN PANEL
+       ========================================================= */
+
+    function openRoomPanel(index) {
+
+        var room =
+            roomsData[index];
+
+
+        if (!room) {
+            return;
+        }
+
+
+        selectedRoom =
+            room;
+
+
+        var panelImage =
+            document.getElementById(
+                "panelImage"
+            );
+
+
+        panelImage.style.display =
+            "";
+
+
+        if (room.image) {
+
+            panelImage.src =
+                room.image;
+
+        }
+        else {
+
+            panelImage.removeAttribute(
+                "src"
+            );
+
+            panelImage.style.display =
+                "none";
+        }
+
+
+        document
+            .getElementById(
+                "panelTitle"
+            )
+            .innerText =
+            room.name;
+
+
+        document
+            .getElementById(
+                "panelCode"
+            )
+            .innerText =
+            room.roomNumber;
+
+
+        var panelStatus =
+            document.getElementById(
+                "panelStatus"
+            );
+
+
+        panelStatus.innerText =
+            room.status;
+
+
+        if (
+            room.status === "In Use"
+        ) {
+
+            panelStatus
+                .classList
+                .add(
+                    "in-use"
+                );
+
+        }
+        else {
+
+            panelStatus
+                .classList
+                .remove(
+                    "in-use"
+                );
+        }
+
+
+        document
+            .getElementById(
+                "panelType"
+            )
+            .innerText =
+            room.type;
+
+
+        document
+            .getElementById(
+                "panelCapacity"
+            )
+            .innerText =
+            room.capacity;
+
+
+        document
+            .getElementById(
+                "panelArea"
+            )
+            .innerText =
+            room.area + " m²";
+
+
+        document
+            .getElementById(
+                "panelCurrentStatus"
+            )
+            .innerText =
+            room.status === "Available"
+                ? "Available for use"
+                : "Currently in use";
+
+
+        document
+            .getElementById(
+                "panelDescription"
+            )
+            .innerText =
+            room.description ||
+            "No description has been added yet.";
+
+
+        loadFacilities(
+            "panelFacilities",
+            room.facilities
+        );
+
+
+        closeVisiblePanels();
+
+
+        document
+            .getElementById(
+                "roomOverlay"
+            )
+            .classList
+            .add(
+                "open"
+            );
+
+
+        document
+            .getElementById(
+                "roomPanel"
+            )
+            .classList
+            .add(
+                "open"
+            );
+
+
+        document.body.style.overflow =
+            "hidden";
+    }
+
+
+    /* =========================================================
+       FACILITIES
+       ========================================================= */
+
+    function loadFacilities(
+        containerId,
+        facilitiesText
+    ) {
+
+        var container =
+            document.getElementById(
+                containerId
+            );
+
+
+        container.innerHTML =
+            "";
+
+
+        if (!facilitiesText) {
+
+            var emptyFacility =
+                document.createElement(
+                    "span"
+                );
+
+            emptyFacility.className =
+                "facility-tag";
+
+            emptyFacility.innerText =
+                "No facilities listed";
+
+            container.appendChild(
+                emptyFacility
+            );
+
+            return;
+        }
+
+
+        var facilities =
+            facilitiesText.split("|");
+
+
+        for (
+            var i = 0;
+            i < facilities.length;
+            i++
+        ) {
+
+            var text =
+                facilities[i].trim();
+
+
+            if (text !== "") {
+
+                var facility =
+                    document.createElement(
+                        "span"
+                    );
+
+
+                facility.className =
+                    "facility-tag";
+
+
+                facility.innerText =
+                    text;
+
+
+                container.appendChild(
+                    facility
+                );
+            }
+        }
+    }
+
+
+    /* =========================================================
+       EDIT
+       ========================================================= */
+
+    function openEditPanel() {
+
+        if (!isAdmin) {
+            return;
+        }
+
+        if (!selectedRoom) {
+            return;
+        }
+
+
+        document
+            .getElementById(
+                "editRoomId"
+            )
+            .value =
+            selectedRoom.id;
+
+
+        document
+            .getElementById(
+                "editRoomName"
+            )
+            .value =
+            selectedRoom.name;
+
+
+        document
+            .getElementById(
+                "editRoomNumber"
+            )
+            .value =
+            selectedRoom.roomNumber;
+
+
+        setEditRoomType(
+            selectedRoom.type || ""
+        );
+
+
+        document
+            .getElementById(
+                "editStatus"
+            )
+            .value =
+            selectedRoom.status;
+
+
+        document
+            .getElementById(
+                "editCapacity"
+            )
+            .value =
+            selectedRoom.capacity;
+
+
+        document
+            .getElementById(
+                "editArea"
+            )
+            .value =
+            selectedRoom.area;
+
+
+        document
+            .getElementById(
+                "editDescription"
+            )
+            .value =
+            selectedRoom.description || "";
+
+
+        document
+            .getElementById(
+                "editFacilities"
+            )
+            .value =
+            selectedRoom.facilities || "";
+
+
+        document
+            .getElementById(
+                "editImagePath"
+            )
+            .value =
+            selectedRoom.image || "";
+
+
+        closeVisiblePanels();
+
+
+        document
+            .getElementById(
+                "editPanel"
+            )
+            .classList
+            .add(
+                "open"
+            );
+    }
+
+
+    function backToDetails() {
+
+        closeVisiblePanels();
+
+
+        document
+            .getElementById(
+                "roomPanel"
+            )
+            .classList
+            .add(
+                "open"
+            );
+    }
+
+
+    /* =========================================================
+       FULL DETAILS
+       ========================================================= */
+
+    function openFullDetailsPanel() {
+
+        if (!selectedRoom) {
+            return;
+        }
+
+
+        document
+            .getElementById(
+                "detailsTitle"
+            )
+            .innerText =
+            selectedRoom.name +
+            " Details";
+
+
+        document
+            .getElementById(
+                "detailsRoomName"
+            )
+            .innerText =
+            selectedRoom.name;
+
+
+        document
+            .getElementById(
+                "detailsRoomNumber"
+            )
+            .innerText =
+            selectedRoom.roomNumber;
+
+
+        document
+            .getElementById(
+                "detailsRoomType"
+            )
+            .innerText =
+            selectedRoom.type;
+
+
+        document
+            .getElementById(
+                "detailsStatus"
+            )
+            .innerText =
+            selectedRoom.status;
+
+
+        document
+            .getElementById(
+                "detailsCapacity"
+            )
+            .innerText =
+            selectedRoom.capacity +
+            " people";
+
+
+        document
+            .getElementById(
+                "detailsArea"
+            )
+            .innerText =
+            selectedRoom.area +
+            " m²";
+
+
+        document
+            .getElementById(
+                "detailsDescription"
+            )
+            .innerText =
+            selectedRoom.description ||
+            "No description has been added yet.";
+
+
+        document
+            .getElementById(
+                "detailsImagePath"
+            )
+            .innerText =
+            selectedRoom.image ||
+            "No image path";
+
+
+        loadFacilities(
+            "detailsFacilities",
+            selectedRoom.facilities
+        );
+
+
+        closeVisiblePanels();
+
+
+        document
+            .getElementById(
+                "detailsPanel"
+            )
+            .classList
+            .add(
+                "open"
+            );
+    }
+
+
+    function backFromFullDetails() {
+
+        closeVisiblePanels();
+
+
+        document
+            .getElementById(
+                "roomPanel"
+            )
+            .classList
+            .add(
+                "open"
+            );
+    }
+
+
+    /* =========================================================
+       DELETE
+       ========================================================= */
+
+    function openDeletePanel() {
+
+        if (!isAdmin) {
+            return;
+        }
+
+        if (!selectedRoom) {
+            return;
+        }
+
+
+        document
+            .getElementById(
+                "deleteRoomId"
+            )
+            .value =
+            selectedRoom.id;
+
+
+        document
+            .getElementById(
+                "deleteRoomName"
+            )
+            .innerText =
+            selectedRoom.name;
+
+
+        document
+            .getElementById(
+                "deleteRoomNumber"
+            )
+            .innerText =
+            selectedRoom.roomNumber;
+
+
+        document
+            .getElementById(
+                "deleteRoomType"
+            )
+            .innerText =
+            selectedRoom.type;
+
+
+        document
+            .getElementById(
+                "deleteRoomCapacity"
+            )
+            .innerText =
+            selectedRoom.capacity +
+            " people";
+
+
+        closeVisiblePanels();
+
+
+        document
+            .getElementById(
+                "deletePanel"
+            )
+            .classList
+            .add(
+                "open"
+            );
+    }
+
+
+    function backFromDelete() {
+
+        closeVisiblePanels();
+
+
+        document
+            .getElementById(
+                "roomPanel"
+            )
+            .classList
+            .add(
+                "open"
+            );
+    }
+
+
+    /* =========================================================
+       ADD
+       ========================================================= */
+
+    function openAddPanel() {
+
+        if (!isAdmin) {
+            return;
+        }
+
+        selectedRoom =
+            null;
+
+
+        document
+            .getElementById(
+                "addRoomForm"
+            )
+            .reset();
+
+
+        document
+            .getElementById(
+                "addRoomTypeValue"
+            )
+            .value =
+            "";
+
+
+        document
+            .getElementById(
+                "addOtherRoomType"
+            )
+            .value =
+            "";
+
+
+        updateAddRoomType();
+
+
+        closeVisiblePanels();
+
+
+        document
+            .getElementById(
+                "roomOverlay"
+            )
+            .classList
+            .add(
+                "open"
+            );
+
+
+        document
+            .getElementById(
+                "addPanel"
+            )
+            .classList
+            .add(
+                "open"
+            );
+
+
+        document.body.style.overflow =
+            "hidden";
+    }
+
+
+    /* =========================================================
+       OTHER ROOM TYPE - ADD / EDIT
+       ========================================================= */
+
+    var mainRoomTypes = [
+        "Lecture Hall",
+        "Computer Lab",
+        "Laboratory",
+        "Library",
+        "Meeting Room"
+    ];
+
+
+    function isMainRoomType(roomType) {
+
+        return mainRoomTypes.indexOf(
+            roomType
+        ) !== -1;
+    }
+
+
+    function updateAddRoomType() {
+
+        var select =
+            document.getElementById(
+                "addRoomType"
+            );
+
+        var otherField =
+            document.getElementById(
+                "addOtherRoomTypeField"
+            );
+
+        var otherInput =
+            document.getElementById(
+                "addOtherRoomType"
+            );
+
+        var hiddenValue =
+            document.getElementById(
+                "addRoomTypeValue"
+            );
+
+
+        if (
+            select.value === "Other"
+        ) {
+
+            otherField.classList.add(
+                "open"
+            );
+
+            otherInput.required =
+                true;
+
+            hiddenValue.value =
+                otherInput.value.trim();
+
+        }
+        else {
+
+            otherField.classList.remove(
+                "open"
+            );
+
+            otherInput.required =
+                false;
+
+            otherInput.value =
+                "";
+
+            hiddenValue.value =
+                select.value;
+        }
+    }
+
+
+    function updateEditRoomType() {
+
+        var select =
+            document.getElementById(
+                "editRoomType"
+            );
+
+        var otherField =
+            document.getElementById(
+                "editOtherRoomTypeField"
+            );
+
+        var otherInput =
+            document.getElementById(
+                "editOtherRoomType"
+            );
+
+        var hiddenValue =
+            document.getElementById(
+                "editRoomTypeValue"
+            );
+
+
+        if (
+            select.value === "Other"
+        ) {
+
+            otherField.classList.add(
+                "open"
+            );
+
+            otherInput.required =
+                true;
+
+            hiddenValue.value =
+                otherInput.value.trim();
+
+        }
+        else {
+
+            otherField.classList.remove(
+                "open"
+            );
+
+            otherInput.required =
+                false;
+
+            otherInput.value =
+                "";
+
+            hiddenValue.value =
+                select.value;
+        }
+    }
+
+
+    function setEditRoomType(roomType) {
+
+        var select =
+            document.getElementById(
+                "editRoomType"
+            );
+
+        var otherInput =
+            document.getElementById(
+                "editOtherRoomType"
+            );
+
+
+        if (
+            isMainRoomType(
+                roomType
+            )
+        ) {
+
+            select.value =
+                roomType;
+
+            otherInput.value =
+                "";
+
+            updateEditRoomType();
+
+        }
+        else {
+
+            select.value =
+                "Other";
+
+            otherInput.value =
+                roomType;
+
+            updateEditRoomType();
+
+            otherInput.value =
+                roomType;
+
+            document
+                .getElementById(
+                    "editRoomTypeValue"
+                )
+                .value =
+                roomType;
+        }
+    }
+
+
+    document
+        .getElementById(
+            "addRoomType"
+        )
+        .addEventListener(
+            "change",
+            updateAddRoomType
+        );
+
+
+    document
+        .getElementById(
+            "addOtherRoomType"
+        )
+        .addEventListener(
+            "input",
+            updateAddRoomType
+        );
+
+
+    document
+        .getElementById(
+            "editRoomType"
+        )
+        .addEventListener(
+            "change",
+            updateEditRoomType
+        );
+
+
+    document
+        .getElementById(
+            "editOtherRoomType"
+        )
+        .addEventListener(
+            "input",
+            updateEditRoomType
+        );
+
+
+    document
+        .getElementById(
+            "addRoomForm"
+        )
+        .addEventListener(
+            "submit",
+            function (event) {
+
+                updateAddRoomType();
+
+                var roomType =
+                    document
+                        .getElementById(
+                            "addRoomTypeValue"
+                        )
+                        .value
+                        .trim();
+
+
+                if (!roomType) {
+
+                    event.preventDefault();
+
+                    if (
+                        document
+                            .getElementById(
+                                "addRoomType"
+                            )
+                            .value ===
+                        "Other"
+                    ) {
+
+                        document
+                            .getElementById(
+                                "addOtherRoomType"
+                            )
+                            .focus();
+
+                    }
+                    else {
+
+                        document
+                            .getElementById(
+                                "addRoomType"
+                            )
+                            .focus();
+                    }
+                }
+            }
+        );
+
+
+    document
+        .getElementById(
+            "editRoomForm"
+        )
+        .addEventListener(
+            "submit",
+            function (event) {
+
+                updateEditRoomType();
+
+                var roomType =
+                    document
+                        .getElementById(
+                            "editRoomTypeValue"
+                        )
+                        .value
+                        .trim();
+
+
+                if (!roomType) {
+
+                    event.preventDefault();
+
+                    if (
+                        document
+                            .getElementById(
+                                "editRoomType"
+                            )
+                            .value ===
+                        "Other"
+                    ) {
+
+                        document
+                            .getElementById(
+                                "editOtherRoomType"
+                            )
+                            .focus();
+
+                    }
+                    else {
+
+                        document
+                            .getElementById(
+                                "editRoomType"
+                            )
+                            .focus();
+                    }
+                }
+            }
+        );
+
+
+    /* =========================================================
+       CLOSE
+       ========================================================= */
+
+    function closeVisiblePanels() {
+
+        document
+            .getElementById(
+                "roomPanel"
+            )
+            .classList
+            .remove(
+                "open"
+            );
+
+
+        document
+            .getElementById(
+                "editPanel"
+            )
+            .classList
+            .remove(
+                "open"
+            );
+
+
+        document
+            .getElementById(
+                "addPanel"
+            )
+            .classList
+            .remove(
+                "open"
+            );
+
+
+        document
+            .getElementById(
+                "detailsPanel"
+            )
+            .classList
+            .remove(
+                "open"
+            );
+
+
+        document
+            .getElementById(
+                "deletePanel"
+            )
+            .classList
+            .remove(
+                "open"
+            );
+    }
+
+
+    function closeAllPanels() {
+
+        closeVisiblePanels();
+
+
+        document
+            .getElementById(
+                "roomOverlay"
+            )
+            .classList
+            .remove(
+                "open"
+            );
+
+
+        document.body.style.overflow =
+            "";
+    }
+
+
+    /* =========================================================
+       ROOM FILTER MENU + MULTI CHECKBOX FILTERING
+       ========================================================= */
+
+    (function () {
+
+        var wrap =
+            document.getElementById("roomFilterWrap");
+
+        var button =
+            document.getElementById("roomFilterButton");
+
+        var menu =
+            document.getElementById("roomFilterMenu");
+
+        var clearButton =
+            document.getElementById("roomFilterClear");
+
+        var allCheckbox =
+            document.getElementById("roomFilterAll");
+
+        var countBadge =
+            document.getElementById("roomFilterCount");
+
+        var checkboxes =
+            document.querySelectorAll(
+                ".room-filter-checkbox"
+            );
+
+        var cards =
+            document.querySelectorAll(
+                ".room-card"
+            );
+
+
+        function openRoomFilterMenu() {
+            menu.classList.add("open");
+            button.classList.add("open");
+            button.setAttribute("aria-expanded", "true");
+        }
+
+
+        function closeRoomFilterMenu() {
+            menu.classList.remove("open");
+            button.classList.remove("open");
+            button.setAttribute("aria-expanded", "false");
+        }
+
+
+        function getSelectedRoomFilters() {
+
+            var selected = [];
+
+            for (
+                var i = 0;
+                i < checkboxes.length;
+                i++
+            ) {
+
+                if (
+                    checkboxes[i].value !== "All" &&
+                    checkboxes[i].checked
+                ) {
+                    selected.push(
+                        checkboxes[i].value
+                    );
+                }
+            }
+
+            return selected;
+        }
+
+
+        function updateRoomFilterBadge(selected) {
+
+            if (
+                allCheckbox.checked ||
+                selected.length === 0
+            ) {
+                countBadge.classList.remove("show");
+                countBadge.textContent = "";
+                return;
+            }
+
+            countBadge.textContent =
+                selected.length;
+
+            countBadge.classList.add("show");
+        }
+
+
+        function roomMatchesFilter(
+            category,
+            filter
+        ) {
+
+            var categoryLower =
+                (category || "")
+                    .toLowerCase();
+
+
+            if (filter === "Lab") {
+                return categoryLower.indexOf("lab") !== -1;
+            }
+
+            if (filter === "Lecture") {
+                return categoryLower.indexOf("lecture") !== -1;
+            }
+
+            if (filter === "Library") {
+                return categoryLower.indexOf("library") !== -1;
+            }
+
+            if (filter === "Meeting") {
+                return categoryLower.indexOf("meeting") !== -1;
+            }
+
+            if (filter === "Other") {
+
+                var isKnownType =
+                    categoryLower.indexOf("lab") !== -1 ||
+                    categoryLower.indexOf("lecture") !== -1 ||
+                    categoryLower.indexOf("library") !== -1 ||
+                    categoryLower.indexOf("meeting") !== -1;
+
+                return !isKnownType;
+            }
+
+            return false;
+        }
+
+
+        function applyRoomFilters() {
+
+            var selected =
+                getSelectedRoomFilters();
+
+
+            if (
+                !allCheckbox.checked &&
+                selected.length === 0
+            ) {
+                allCheckbox.checked = true;
+            }
+
+
+            if (allCheckbox.checked) {
+
+                for (
+                    var a = 0;
+                    a < cards.length;
+                    a++
+                ) {
+                    cards[a].style.display = "";
+                }
+
+                updateRoomFilterBadge([]);
+                return;
+            }
+
+
+            for (
+                var c = 0;
+                c < cards.length;
+                c++
+            ) {
+
+                var category =
+                    cards[c]
+                        .getAttribute(
+                            "data-category"
+                        ) || "";
+
+                var showCard =
+                    false;
+
+
+                for (
+                    var s = 0;
+                    s < selected.length;
+                    s++
+                ) {
+
+                    if (
+                        roomMatchesFilter(
+                            category,
+                            selected[s]
+                        )
+                    ) {
+                        showCard = true;
+                        break;
+                    }
+                }
+
+
+                cards[c].style.display =
+                    showCard
+                        ? ""
+                        : "none";
+            }
+
+
+            updateRoomFilterBadge(
+                selected
+            );
+        }
+
+
+        button.addEventListener(
+            "click",
+            function (event) {
+
+                event.stopPropagation();
+
+                if (
+                    menu.classList.contains("open")
+                ) {
+                    closeRoomFilterMenu();
+                }
+                else {
+                    openRoomFilterMenu();
+                }
+            }
+        );
+
+
+        menu.addEventListener(
+            "click",
+            function (event) {
+                event.stopPropagation();
+            }
+        );
+
+
+        allCheckbox.addEventListener(
+            "change",
+            function () {
+
+                if (this.checked) {
+
+                    for (
+                        var i = 0;
+                        i < checkboxes.length;
+                        i++
+                    ) {
+
+                        if (
+                            checkboxes[i].value !== "All"
+                        ) {
+                            checkboxes[i].checked = false;
+                        }
+                    }
+                }
+
+                applyRoomFilters();
+            }
+        );
+
+
+        for (
+            var i = 0;
+            i < checkboxes.length;
+            i++
+        ) {
+
+            if (
+                checkboxes[i].value === "All"
+            ) {
+                continue;
+            }
+
+
+            checkboxes[i]
+                .addEventListener(
+                    "change",
+                    function () {
+
+                        if (this.checked) {
+                            allCheckbox.checked = false;
+                        }
+
+                        var selected =
+                            getSelectedRoomFilters();
+
+                        if (
+                            selected.length === 0
+                        ) {
+                            allCheckbox.checked = true;
+                        }
+
+                        applyRoomFilters();
+                    }
+                );
+        }
+
+
+        clearButton.addEventListener(
+            "click",
+            function () {
+
+                for (
+                    var i = 0;
+                    i < checkboxes.length;
+                    i++
+                ) {
+                    checkboxes[i].checked =
+                        checkboxes[i].value === "All";
+                }
+
+                applyRoomFilters();
+            }
+        );
+
+
+        document.addEventListener(
+            "click",
+            function (event) {
+
+                if (
+                    wrap &&
+                    !wrap.contains(event.target)
+                ) {
+                    closeRoomFilterMenu();
+                }
+            }
+        );
+
+
+        document.addEventListener(
+            "keydown",
+            function (event) {
+
+                if (
+                    event.key === "Escape"
+                ) {
+
+                    if (
+                        menu.classList.contains("open")
+                    ) {
+                        closeRoomFilterMenu();
+                        return;
+                    }
+
+                    closeAllPanels();
+                }
+            }
+        );
+
+
+        applyRoomFilters();
+
+    })();
+
+</script>

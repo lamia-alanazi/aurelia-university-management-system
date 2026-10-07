@@ -1,0 +1,73 @@
+﻿@model lamia12771.Models.Course
+
+@{
+    ViewBag.Title = "Course Details";
+}
+
+<div class="container">
+
+    <div class="row">
+        <div class="col-md-8 col-md-offset-2">
+
+            <div class="panel panel-info">
+
+                <div class="panel-heading">
+                    <h3 class="panel-title">Course Details</h3>
+                </div>
+
+                <div class="panel-body">
+
+                    <p class="text-muted">
+                        View the course information below.
+                    </p>
+
+                    <dl class="dl-horizontal">
+
+                        <dt>
+                            @Html.DisplayNameFor(model => model.CourseName)
+                        </dt>
+
+                        <dd>
+                            @Html.DisplayFor(model => model.CourseName)
+                        </dd>
+
+                        <dt>
+                            @Html.DisplayNameFor(model => model.CreditHours)
+                        </dt>
+
+                        <dd>
+                            @Html.DisplayFor(model => model.CreditHours)
+                        </dd>
+
+                    </dl>
+
+                    <hr />
+
+                    <div>
+
+                        @Html.ActionLink(
+                            "Edit Course",
+                            "Edit",
+                            "Courses",
+                            new { id = Model.CourseId },
+                            new { @class = "btn btn-warning" }
+                        )
+
+                        @Html.ActionLink(
+                            "Back to Courses",
+                            "Index",
+                            "Courses",
+                            null,
+                            new { @class = "btn btn-default" }
+                        )
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+
+</div>

@@ -1,0 +1,3212 @@
+﻿@model IEnumerable<lamia12771.Models.Student>
+@using System
+@using System.Collections.Generic
+@using System.Linq
+
+@{ ViewBag.Title = "Students";
+
+    var students =
+        Model == null
+            ? new List<lamia12771.Models.Student>()
+            : Model.ToList();
+
+    var teachers =
+        ViewBag.Teachers as List<lamia12771.Models.Teacher>
+        ?? new List<lamia12771.Models.Teacher>();
+
+    var majors =
+        students
+            .Where(s => !string.IsNullOrWhiteSpace(s.Major))
+            .Select(s => s.Major.Trim())
+            .Distinct()
+            .OrderBy(s => s)
+            .ToList();
+
+    var mainMajors = new[]
+    {
+        "Software Engineering",
+        "Computer Science",
+        "Biology",
+        "Business Administration",
+        "Mechanical Engineering"
+    };
+
+    decimal averageGpa =
+        students.Count == 0
+            ? 0
+            : students.Average(s => s.GPA);
+
+
+    bool isAdmin =
+        Session["IsAdmin"] != null
+        && Session["IsAdmin"] is bool
+        && (bool)Session["IsAdmin"]; }
+
+<style>
+    /* =========================================================
+       STUDENTS PAGE
+       Same Aurelia scale and layout language as Teachers
+       ========================================================= */
+
+    .students-page {
+        width: 100%;
+        min-height: 100vh;
+        padding: 70px 0 90px;
+        background: #ffffff;
+        color: #171717;
+        font-family: Arial, sans-serif;
+    }
+
+        .students-page * {
+            box-sizing: border-box;
+        }
+
+    .students-container {
+        width: 88%;
+        max-width: 1380px;
+        margin: 0 auto;
+    }
+
+
+    /* =========================================================
+       HEADER
+       ========================================================= */
+
+    .students-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+        gap: 40px;
+        padding-bottom: 32px;
+        border-bottom: 1px solid #e1e3e4;
+    }
+
+    .students-heading-small {
+        margin-bottom: 10px;
+        color: #3E4348;
+        font-size: 10px;
+        font-weight: 600;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+    }
+
+    .students-header h1 {
+        margin: 0;
+        font-family: 'Times New Roman', serif;
+        font-size: 48px;
+        font-weight: 400;
+        color: #171717;
+    }
+
+    .students-header p {
+        max-width: 520px;
+        margin: 12px 0 0;
+        font-size: 12px;
+        line-height: 1.8;
+        color: #777777;
+    }
+
+    .students-summary {
+        display: flex;
+        align-items: center;
+        gap: 35px;
+    }
+
+    .student-summary-item {
+        min-width: 90px;
+    }
+
+    .student-summary-number {
+        display: block;
+        font-family: 'Times New Roman', serif;
+        font-size: 32px;
+        line-height: 1;
+        color: #171717;
+    }
+
+    .student-summary-label {
+        display: block;
+        margin-top: 7px;
+        font-size: 9px;
+        letter-spacing: .8px;
+        text-transform: uppercase;
+        color: #888888;
+    }
+
+
+    /* =========================================================
+       TOOLBAR / FILTER
+       ========================================================= */
+
+    .students-toolbar {
+        margin: 34px 0 32px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 25px;
+    }
+
+    .student-filter-wrap {
+        position: relative;
+        display: inline-flex;
+        align-items: center;
+    }
+
+    .student-filter-trigger {
+        position: relative;
+        width: 44px;
+        height: 44px;
+        padding: 0;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid #d8dadd;
+        border-radius: 8px;
+        background: #ffffff;
+        color: #3E4348;
+        cursor: pointer;
+        transition: .25s ease;
+    }
+
+        .student-filter-trigger:hover,
+        .student-filter-trigger.open {
+            border-color: #3E4348;
+            background: #f4f4f3;
+        }
+
+        .student-filter-trigger svg {
+            width: 21px;
+            height: 21px;
+            display: block;
+        }
+
+    .student-filter-count {
+        position: absolute;
+        top: -6px;
+        right: -6px;
+        min-width: 18px;
+        height: 18px;
+        padding: 0 5px;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        border: 2px solid #ffffff;
+        border-radius: 20px;
+        background: #3E4348;
+        color: #ffffff;
+        font-size: 8px;
+        font-weight: 700;
+        line-height: 1;
+    }
+
+        .student-filter-count.show {
+            display: inline-flex;
+        }
+
+    .student-filter-menu {
+        position: absolute;
+        top: calc(100% + 10px);
+        left: 0;
+        z-index: 200;
+        width: 285px;
+        max-width: calc(100vw - 40px);
+        padding: 15px;
+        border: 1px solid #d7dadd;
+        border-radius: 10px;
+        background: #ffffff;
+        box-shadow: 0 18px 45px rgba(32,36,40,.14);
+        opacity: 0;
+        visibility: hidden;
+        transform: translateY(-5px);
+        transition: .2s ease;
+    }
+
+        .student-filter-menu.open {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+    .student-filter-menu-head {
+        margin-bottom: 10px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid #eceeef;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+    }
+
+    .student-filter-menu-title {
+        color: #3E4348;
+        font-size: 9px;
+        font-weight: 700;
+        letter-spacing: 1.2px;
+        text-transform: uppercase;
+    }
+
+    .student-filter-clear {
+        padding: 0;
+        border: 0;
+        background: transparent;
+        color: #777777;
+        font-size: 9px;
+        text-transform: uppercase;
+        cursor: pointer;
+    }
+
+        .student-filter-clear:hover {
+            color: #3E4348;
+        }
+
+    .student-filter-option {
+        min-height: 36px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        cursor: pointer;
+        color: #44494d;
+        font-size: 11px;
+        user-select: none;
+    }
+
+        .student-filter-option + .student-filter-option {
+            border-top: 1px solid #f0f1f1;
+        }
+
+        .student-filter-option input {
+            position: absolute;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+    .student-filter-check {
+        width: 16px;
+        height: 16px;
+        flex: 0 0 16px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid #bfc3c5;
+        border-radius: 3px;
+        background: #ffffff;
+        transition: .2s ease;
+    }
+
+    .student-filter-option input:checked + .student-filter-check {
+        border-color: #3E4348;
+        background: #3E4348;
+    }
+
+        .student-filter-option input:checked + .student-filter-check:after {
+            content: "";
+            width: 7px;
+            height: 4px;
+            border-left: 2px solid #ffffff;
+            border-bottom: 2px solid #ffffff;
+            transform: rotate(-45deg) translateY(-1px);
+        }
+
+    .student-filter-option-text {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .add-student-button {
+        display: inline-block;
+        padding: 11px 20px;
+        background: #3E4348;
+        border: 1px solid #3E4348;
+        color: #ffffff;
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: .7px;
+        text-transform: uppercase;
+        text-decoration: none;
+        cursor: pointer;
+        transition: .25s ease;
+    }
+
+        .add-student-button:hover {
+            background: #2F3438;
+            border-color: #2F3438;
+        }
+
+
+    /* =========================================================
+       STUDENT CARDS
+       ========================================================= */
+
+    .students-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 25px;
+    }
+
+    .student-card {
+        position: relative;
+        min-height: 300px;
+        padding: 20px;
+        overflow: hidden;
+        background: #ffffff;
+        border: 1px solid #e1e3e4;
+        border-radius: 8px;
+        box-shadow: 0 8px 24px rgba(32,36,40,.05);
+        cursor: pointer;
+        transition: transform .3s ease, box-shadow .3s ease, border-color .3s ease;
+    }
+
+        .student-card:hover {
+            transform: translateY(-5px);
+            border-color: #737A80;
+            box-shadow: 0 18px 45px rgba(32,36,40,.11);
+        }
+
+    .student-card-top {
+        display: flex;
+        gap: 16px;
+        align-items: flex-start;
+    }
+
+    .student-avatar {
+        width: 100px;
+        height: 118px;
+        flex: 0 0 100px;
+        border: 1px solid #d1d4d6;
+        border-radius: 8px;
+        overflow: hidden;
+        background: #eeeeec;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #3E4348;
+        font-family: 'Times New Roman', serif;
+        font-size: 25px;
+    }
+
+        .student-avatar img,
+        .student-panel-avatar img,
+        .student-full-avatar img {
+            width: 100%;
+            height: 100%;
+            display: block;
+            object-fit: cover;
+            object-position: center top;
+        }
+
+    .student-card-info {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .student-name {
+        margin: 0 0 4px;
+        font-family: 'Times New Roman', serif;
+        font-size: 20px;
+        font-weight: 400;
+        color: #171717;
+    }
+
+    .student-major {
+        margin-bottom: 4px;
+        color: #3E4348;
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: .4px;
+        text-transform: uppercase;
+    }
+
+    .student-level {
+        color: #888888;
+        font-size: 11px;
+        line-height: 1.5;
+    }
+
+    .student-stats {
+        margin-top: 13px;
+        padding-top: 12px;
+        display: flex;
+        gap: 24px;
+        border-top: 1px solid #eceeef;
+    }
+
+    .student-stat-value {
+        display: block;
+        margin-bottom: 3px;
+        font-family: 'Times New Roman', serif;
+        font-size: 17px;
+        color: #171717;
+    }
+
+    .student-stat-label {
+        display: block;
+        font-size: 8px;
+        letter-spacing: .8px;
+        text-transform: uppercase;
+        color: #999999;
+    }
+
+    .student-progress {
+        margin-top: 16px;
+    }
+
+    .student-progress-head {
+        margin-bottom: 6px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        color: #777777;
+        font-size: 8px;
+        font-weight: 700;
+        letter-spacing: .7px;
+        text-transform: uppercase;
+    }
+
+    .student-progress-track {
+        width: 100%;
+        height: 5px;
+        overflow: hidden;
+        border-radius: 20px;
+        background: #eceeef;
+    }
+
+    .student-progress-fill {
+        height: 100%;
+        border-radius: 20px;
+        background: #3E4348;
+    }
+
+    .student-advisor-line {
+        margin-top: 14px;
+        padding-top: 12px;
+        border-top: 1px solid #eceeef;
+        color: #777777;
+        font-size: 10px;
+        line-height: 1.6;
+    }
+
+    .student-advisor-label {
+        display: block;
+        margin-bottom: 2px;
+        color: #999999;
+        font-size: 8px;
+        font-weight: 700;
+        letter-spacing: .8px;
+        text-transform: uppercase;
+    }
+
+    .student-advisor-name {
+        color: #34393d;
+        font-weight: 600;
+    }
+
+    .student-card-footer {
+        margin-top: 14px;
+        padding-top: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        border-top: 1px solid #eceeef;
+    }
+
+    .student-view-text {
+        color: #3E4348;
+        font-size: 9px;
+        font-weight: 600;
+        letter-spacing: .8px;
+        text-transform: uppercase;
+    }
+
+    .students-empty {
+        grid-column: 1 / -1;
+        padding: 70px 20px;
+        text-align: center;
+        border: 1px solid #e1e3e4;
+        color: #777777;
+    }
+
+
+    /* =========================================================
+       OVERLAY / PANELS
+       ========================================================= */
+
+    .student-overlay {
+        position: fixed;
+        inset: 0;
+        z-index: 9998;
+        background: rgba(10,11,13,.64);
+        backdrop-filter: blur(2px);
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity .3s ease;
+    }
+
+        .student-overlay.open {
+            opacity: 1;
+            visibility: visible;
+        }
+
+    .student-details-panel,
+    .student-form-panel,
+    .student-delete-panel,
+    .student-full-panel {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        z-index: 9999;
+        max-width: 92%;
+        max-height: 90vh;
+        overflow-y: auto;
+        overflow-x: hidden;
+        background: #ffffff;
+        color: #202326;
+        border: 1px solid #c8cbcd;
+        border-radius: 18px;
+        box-shadow: 0 30px 90px rgba(0,0,0,.28);
+        opacity: 0;
+        visibility: hidden;
+        transform: translate(-50%, -47%) scale(.97);
+        transition: opacity .28s ease, transform .32s ease, visibility .28s ease;
+    }
+
+    .student-details-panel,
+    .student-form-panel {
+        width: 700px;
+    }
+
+    .student-delete-panel {
+        width: 540px;
+    }
+
+    .student-full-panel {
+        width: 790px;
+    }
+
+        .student-details-panel.open,
+        .student-form-panel.open,
+        .student-delete-panel.open,
+        .student-full-panel.open {
+            opacity: 1;
+            visibility: visible;
+            transform: translate(-50%, -50%) scale(1);
+        }
+
+    .student-panel-header {
+        position: relative;
+        padding: 28px 30px 23px;
+        background: #ffffff;
+        border-bottom: 1px solid #d1d4d6;
+    }
+
+    .student-panel-small {
+        margin-bottom: 7px;
+        color: #646a6e;
+        font-size: 9px;
+        font-weight: 700;
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+    }
+
+    .student-panel-header h2 {
+        margin: 0;
+        padding-right: 60px;
+        font-family: 'Times New Roman', serif;
+        font-size: 31px;
+        font-weight: 400;
+        color: #171717;
+    }
+
+    .student-panel-header p {
+        max-width: 520px;
+        margin: 7px 0 0;
+        color: #6f7579;
+        font-size: 11px;
+        line-height: 1.7;
+    }
+
+    .student-panel-close {
+        position: absolute;
+        right: 25px;
+        top: 27px;
+        width: 42px;
+        height: 42px;
+        border: 1px solid #3E4348;
+        border-radius: 50%;
+        background: #3E4348;
+        color: #ffffff;
+        font-size: 21px;
+        cursor: pointer;
+    }
+
+    .student-panel-body {
+        padding: 27px 30px 32px;
+        background: #ffffff;
+    }
+
+    .student-profile-top {
+        display: flex;
+        align-items: center;
+        gap: 18px;
+        padding-bottom: 23px;
+        border-bottom: 1px solid #d5d7d9;
+    }
+
+    .student-panel-avatar {
+        width: 78px;
+        height: 92px;
+        flex: 0 0 78px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+        border: 1px solid #d1d4d6;
+        border-radius: 9px;
+        background: #eeeeec;
+        color: #3E4348;
+        font-family: 'Times New Roman', serif;
+        font-size: 26px;
+    }
+
+    .student-profile-name {
+        margin: 0;
+        font-family: 'Times New Roman', serif;
+        font-size: 25px;
+        font-weight: 400;
+    }
+
+    .student-profile-major {
+        margin-top: 5px;
+        color: #3E4348;
+        font-size: 9px;
+        font-weight: 700;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+    }
+
+    .student-profile-level {
+        margin-top: 5px;
+        color: #777777;
+        font-size: 12px;
+    }
+
+    .student-details-list {
+        margin-top: 24px;
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+    }
+
+    .student-details-item {
+        padding: 16px;
+        background: #eeeeec;
+        border: 1px solid #d1d4d6;
+        border-radius: 10px;
+    }
+
+        .student-details-item.full {
+            grid-column: 1 / -1;
+        }
+
+    .student-details-label {
+        display: block;
+        margin-bottom: 7px;
+        color: #666c70;
+        font-size: 8px;
+        font-weight: 700;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+    }
+
+    .student-details-value {
+        display: block;
+        color: #202326;
+        font-size: 13px;
+        line-height: 1.7;
+        word-break: break-word;
+    }
+
+    .student-panel-actions {
+        margin-top: 28px;
+        padding-top: 20px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        border-top: 1px solid #d5d7d9;
+    }
+
+    .student-panel-action {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 11px 17px;
+        border: 1px solid #c5c8ca;
+        background: #ffffff;
+        color: #3f4447;
+        font-size: 9px;
+        font-weight: 700;
+        letter-spacing: .8px;
+        text-transform: uppercase;
+        cursor: pointer;
+        transition: .2s ease;
+    }
+
+        .student-panel-action:hover {
+            border-color: #3E4348;
+            color: #3E4348;
+        }
+
+        .student-panel-action.edit {
+            background: #3E4348;
+            border-color: #3E4348;
+            color: #ffffff;
+        }
+
+            .student-panel-action.edit:hover {
+                background: #2F3438;
+                border-color: #2F3438;
+            }
+
+
+    /* =========================================================
+       FULL DETAILS
+       ========================================================= */
+
+    .student-full-hero {
+        position: relative;
+        min-height: 205px;
+        padding: 34px;
+        display: flex;
+        align-items: center;
+        gap: 24px;
+        background: #3E4348;
+        color: #ffffff;
+    }
+
+    .student-full-close {
+        position: absolute;
+        right: 24px;
+        top: 22px;
+        width: 42px;
+        height: 42px;
+        border: 1px solid rgba(255,255,255,.3);
+        border-radius: 50%;
+        background: rgba(255,255,255,.08);
+        color: #ffffff;
+        font-size: 21px;
+        cursor: pointer;
+    }
+
+    .student-full-avatar {
+        width: 118px;
+        height: 138px;
+        flex: 0 0 118px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+        border: 1px solid rgba(255,255,255,.3);
+        border-radius: 10px;
+        background: #eeeeec;
+        color: #3E4348;
+        font-family: 'Times New Roman', serif;
+        font-size: 34px;
+    }
+
+    .student-full-heading {
+        padding-right: 45px;
+    }
+
+    .student-full-kicker {
+        margin-bottom: 9px;
+        color: rgba(255,255,255,.65);
+        font-size: 9px;
+        font-weight: 700;
+        letter-spacing: 1.7px;
+        text-transform: uppercase;
+    }
+
+    .student-full-name {
+        margin: 0;
+        font-family: 'Times New Roman', serif;
+        font-size: 34px;
+        font-weight: 400;
+        color: #ffffff;
+    }
+
+    .student-full-major {
+        margin-top: 9px;
+        font-size: 12px;
+        font-weight: 700;
+    }
+
+    .student-full-level {
+        margin-top: 5px;
+        color: rgba(255,255,255,.72);
+        font-size: 11px;
+    }
+
+    .student-full-body {
+        padding: 30px 34px 34px;
+    }
+
+    .student-full-section {
+        padding-bottom: 24px;
+        margin-bottom: 24px;
+        border-bottom: 1px solid #e0e2e3;
+    }
+
+    .student-full-section-title {
+        margin-bottom: 12px;
+        color: #3E4348;
+        font-size: 9px;
+        font-weight: 700;
+        letter-spacing: 1.4px;
+        text-transform: uppercase;
+    }
+
+    .student-facts-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 12px;
+    }
+
+    .student-fact-box {
+        padding: 15px;
+        border: 1px solid #d9dcde;
+        border-radius: 8px;
+        background: #f4f4f3;
+    }
+
+    .student-fact-number {
+        display: block;
+        font-family: 'Times New Roman', serif;
+        font-size: 21px;
+        color: #171717;
+    }
+
+    .student-fact-caption {
+        display: block;
+        margin-top: 5px;
+        color: #777777;
+        font-size: 8px;
+        font-weight: 700;
+        letter-spacing: .8px;
+        text-transform: uppercase;
+    }
+
+    .student-advisor-box {
+        padding: 18px;
+        border: 1px solid #d9dcde;
+        border-radius: 9px;
+        background: #f4f4f3;
+    }
+
+    .student-advisor-box-name {
+        margin-bottom: 5px;
+        font-family: 'Times New Roman', serif;
+        font-size: 19px;
+        color: #171717;
+    }
+
+    .student-advisor-box-meta {
+        color: #6f7579;
+        font-size: 11px;
+        line-height: 1.7;
+    }
+
+    .student-contact-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+    }
+
+    .student-contact-item {
+        padding: 15px;
+        background: #eeeeec;
+        border: 1px solid #d1d4d6;
+        border-radius: 10px;
+    }
+
+    .student-contact-label {
+        display: block;
+        margin-bottom: 7px;
+        color: #666c70;
+        font-size: 8px;
+        font-weight: 700;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+    }
+
+    .student-contact-value {
+        color: #202326;
+        font-size: 12px;
+        word-break: break-word;
+    }
+
+
+    /* =========================================================
+       FORMS
+       ========================================================= */
+
+    .student-form-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 17px;
+    }
+
+    .student-form-field {
+        display: flex;
+        flex-direction: column;
+        gap: 7px;
+    }
+
+        .student-form-field.full {
+            grid-column: 1 / -1;
+        }
+
+        .student-form-field label {
+            color: #555b5f;
+            font-size: 9px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+    .student-input {
+        width: 100%;
+        height: 46px;
+        padding: 0 13px;
+        border: 1px solid #c9ccce;
+        border-radius: 8px;
+        background: #eeeeec;
+        color: #202326;
+        font-family: Arial, sans-serif;
+        font-size: 12px;
+        outline: none;
+    }
+
+        .student-input:focus {
+            border-color: #3E4348;
+            background: #f4f4f3;
+            box-shadow: 0 0 0 2px rgba(62,67,72,.08);
+        }
+
+    .student-other-major {
+        display: none;
+    }
+
+        .student-other-major.open {
+            display: flex;
+        }
+
+    .student-form-help {
+        font-size: 8px;
+        color: #777777;
+        line-height: 1.5;
+    }
+
+    .student-form-actions {
+        margin-top: 25px;
+        padding-top: 20px;
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+        border-top: 1px solid #d1d4d6;
+    }
+
+    .student-cancel-button,
+    .student-save-button {
+        min-width: 115px;
+        padding: 11px 18px;
+        font-size: 9px;
+        font-weight: 700;
+        letter-spacing: .8px;
+        text-transform: uppercase;
+        cursor: pointer;
+    }
+
+    .student-cancel-button {
+        border: 1px solid #bfc3c5;
+        background: #ffffff;
+        color: #3f4447;
+    }
+
+    .student-save-button {
+        border: 1px solid #3E4348;
+        background: #3E4348;
+        color: #ffffff;
+    }
+
+    #deleteStudentPanel .student-save-button {
+        background: #b74a4a;
+        border-color: #b74a4a;
+    }
+
+    .student-delete-warning {
+        margin-top: 20px;
+        padding: 17px;
+        background: #f4f4f3;
+        border: 1px solid #d7d9db;
+        border-radius: 9px;
+        color: #555b5f;
+        font-size: 12px;
+        line-height: 1.7;
+    }
+
+    .student-delete-warning-title {
+        margin-bottom: 8px;
+        color: #8a3d3d;
+        font-size: 9px;
+        font-weight: 700;
+        text-transform: uppercase;
+    }
+
+
+    /* =========================================================
+       RESPONSIVE
+       ========================================================= */
+
+    @@media (max-width: 1050px) {
+        .students-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+
+    @@media (max-width: 768px) {
+        .students-container {
+            width: 92%;
+        }
+
+        .students-header,
+        .students-toolbar {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .students-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .add-student-button {
+            width: 100%;
+            text-align: center;
+        }
+
+        .student-facts-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+
+    @@media (max-width: 560px) {
+        .student-details-list,
+        .student-form-grid,
+        .student-contact-grid,
+        .student-facts-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .student-details-item.full,
+        .student-form-field.full {
+            grid-column: auto;
+        }
+
+        .student-full-hero {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .student-panel-actions,
+        .student-form-actions {
+            flex-direction: column;
+        }
+
+        .student-panel-action,
+        .student-cancel-button,
+        .student-save-button {
+            width: 100%;
+        }
+    }
+</style>
+
+
+<div class="students-page">
+    <div class="students-container">
+
+        <!-- HEADER -->
+        <div class="students-header">
+            <div>
+                <div class="students-heading-small">
+                    Student Directory
+                </div>
+
+                <h1>Students</h1>
+
+                <p>
+                    Browse enrolled students, their academic progress,
+                    and assigned academic advisors.
+                </p>
+            </div>
+
+            <div class="students-summary">
+                <div class="student-summary-item">
+                    <span class="student-summary-number">
+                        @students.Count
+                    </span>
+
+                    <span class="student-summary-label">
+                        Students Listed
+                    </span>
+                </div>
+
+                <div class="student-summary-item">
+                    <span class="student-summary-number">
+                        @averageGpa.ToString("0.0")
+                    </span>
+
+                    <span class="student-summary-label">
+                        Avg. GPA
+                    </span>
+                </div>
+
+                <div class="student-summary-item">
+                    <span class="student-summary-number">
+                        @majors.Count
+                    </span>
+
+                    <span class="student-summary-label">
+                        Majors
+                    </span>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- TOOLBAR -->
+        <div class="students-toolbar">
+            <div class="student-filter-wrap"
+                 id="studentFilterWrap">
+
+                <button type="button"
+                        class="student-filter-trigger"
+                        id="studentFilterButton"
+                        aria-label="Filter students by major"
+                        aria-expanded="false"
+                        aria-controls="studentFilterMenu">
+
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M4 5h16l-6.3 7.1v5.2l-3.4 1.8v-7L4 5z"
+                              fill="none"
+                              stroke="currentColor"
+                              stroke-width="1.8"
+                              stroke-linejoin="round" />
+                        <path d="M16.5 8.5h3.5M15.5 12h4.5M17 15.5h3"
+                              fill="none"
+                              stroke="currentColor"
+                              stroke-width="1.8"
+                              stroke-linecap="round" />
+                    </svg>
+
+                    <span class="student-filter-count"
+                          id="studentFilterCount">
+                    </span>
+                </button>
+
+
+                <div class="student-filter-menu"
+                     id="studentFilterMenu">
+
+                    <div class="student-filter-menu-head">
+                        <span class="student-filter-menu-title">
+                            Filter by Major
+                        </span>
+
+                        <button type="button"
+                                class="student-filter-clear"
+                                id="studentFilterClear">
+                            Clear
+                        </button>
+                    </div>
+
+
+                    <label class="student-filter-option">
+                        <input type="checkbox"
+                               class="student-filter-checkbox"
+                               value="All"
+                               id="studentFilterAll"
+                               checked />
+                        <span class="student-filter-check"></span>
+                        <span class="student-filter-option-text">All Majors</span>
+                    </label>
+
+                    @foreach (var major in mainMajors)
+                    {
+        <label class="student-filter-option">
+            <input type="checkbox"
+                   class="student-filter-checkbox"
+                   value="@major" />
+            <span class="student-filter-check"></span>
+            <span class="student-filter-option-text">@major</span>
+        </label>}
+
+                    <label class="student-filter-option">
+                        <input type="checkbox"
+                               class="student-filter-checkbox"
+                               value="Other" />
+                        <span class="student-filter-check"></span>
+                        <span class="student-filter-option-text">Other</span>
+                    </label>
+                </div>
+            </div>
+
+
+            @if (isAdmin)
+            {
+<button type="button"
+        class="add-student-button"
+        onclick="openAddStudentPanel()">
+    Add New Student
+</button>   }
+        </div>
+
+
+        <!-- GRID -->
+        <div class="students-grid">
+            @if (students.Count == 0)
+            {
+<div class="students-empty">
+    No students have been added yet.
+</div> }
+else
+{
+for (int i = 0; i < students.Count; i++)
+{
+    var item = students[i];
+
+    var initials = "";
+    if (!string.IsNullOrWhiteSpace(item.Name))
+    {
+        var parts =
+            item.Name.Split(
+                new[] { ' ' },
+                StringSplitOptions.RemoveEmptyEntries
+            );
+
+        initials =
+            parts.Length == 1
+                ? parts[0].Substring(0, 1)
+                : parts[0].Substring(0, 1)
+                  + parts[parts.Length - 1].Substring(0, 1);
+    }
+
+    var currentMajor =
+        (item.Major ?? "").Trim();
+
+    var filterMajor =
+        mainMajors.Contains(currentMajor)
+            ? currentMajor
+            : "Other";
+
+    var advisorName =
+        item.Teacher == null
+            ? "Not Assigned"
+            : item.Teacher.Name;
+
+    var progress =
+        item.DegreeProgress < 0
+            ? 0
+            : item.DegreeProgress > 100
+                ? 100
+                : item.DegreeProgress;
+
+<article class="student-card"
+         data-major="@filterMajor"
+         onclick="openStudentPanel(@i)">
+
+    <div class="student-card-top">
+
+        <div class="student-avatar">
+            @if (!string.IsNullOrWhiteSpace(item.ImagePath))
+            {
+<img src="@item.ImagePath"
+     alt="@item.Name"
+     onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+
+                        <span style="display:none;">
+                            @initials
+                        </span> }
+                    else
+                    {
+<span>@initials</span>}
+        </div>
+
+
+        <div class="student-card-info">
+            <h3 class="student-name">
+                @item.Name
+            </h3>
+
+            <div class="student-major">
+                @(string.IsNullOrWhiteSpace(item.Major)
+                                        ? "Not Assigned"
+                                        : item.Major)
+            </div>
+
+            <div class="student-level">
+                @(string.IsNullOrWhiteSpace(item.Level)
+                                        ? "Level Not Assigned"
+                                        : item.Level)
+            </div>
+
+            <div class="student-stats">
+                <div>
+                    <span class="student-stat-value">
+                        @item.GPA.ToString("0.00")
+                    </span>
+                    <span class="student-stat-label">
+                        GPA
+                    </span>
+                </div>
+
+                <div>
+                    <span class="student-stat-value">
+                        @item.CreditsCompleted
+                    </span>
+                    <span class="student-stat-label">
+                        Credits
+                    </span>
+                </div>
+
+                <div>
+                    <span class="student-stat-value">
+                        @item.Age
+                    </span>
+                    <span class="student-stat-label">
+                        Age
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="student-progress">
+        <div class="student-progress-head">
+            <span>Academic Progress</span>
+            <span>@progress%</span>
+        </div>
+
+        <div class="student-progress-track">
+            <div class="student-progress-fill"
+                 style="@("width:" + progress + "%;")">
+            </div>
+        </div>
+    </div>
+
+
+    <div class="student-advisor-line">
+        <span class="student-advisor-label">
+            Academic Advisor
+        </span>
+
+        <span class="student-advisor-name">
+            @advisorName
+        </span>
+    </div>
+
+
+    <div class="student-card-footer">
+        <span class="student-view-text">
+            View Details →
+        </span>
+    </div>
+</article>}
+}
+        </div>
+    </div>
+</div>
+
+
+<!-- OVERLAY -->
+<div class="student-overlay"
+     id="studentOverlay"
+     onclick="closeAllStudentPanels()">
+</div>
+
+
+<!-- =========================================================
+     OVERVIEW
+     ========================================================= -->
+<div class="student-details-panel"
+     id="studentDetailsPanel">
+
+    <div class="student-panel-header">
+        <div class="student-panel-small">
+            Student Profile
+        </div>
+
+        <h2>Student Details</h2>
+
+        <p>
+            Overview of the selected student's academic information.
+        </p>
+
+        <button type="button"
+                class="student-panel-close"
+                onclick="closeAllStudentPanels()">
+            ×
+        </button>
+    </div>
+
+
+    <div class="student-panel-body">
+
+        <div class="student-profile-top">
+            <div class="student-panel-avatar"
+                 id="panelStudentInitials">
+            </div>
+
+            <div>
+                <h3 class="student-profile-name"
+                    id="panelStudentName">
+                </h3>
+
+                <div class="student-profile-major"
+                     id="panelStudentMajor">
+                </div>
+
+                <div class="student-profile-level"
+                     id="panelStudentLevel">
+                </div>
+            </div>
+        </div>
+
+
+        <div class="student-details-list">
+
+            <div class="student-details-item">
+                <span class="student-details-label">Student ID</span>
+                <span class="student-details-value"
+                      id="panelStudentId"></span>
+            </div>
+
+            <div class="student-details-item">
+                <span class="student-details-label">Age</span>
+                <span class="student-details-value"
+                      id="panelStudentAge"></span>
+            </div>
+
+            <div class="student-details-item">
+                <span class="student-details-label">GPA</span>
+                <span class="student-details-value"
+                      id="panelStudentGpa"></span>
+            </div>
+
+            <div class="student-details-item">
+                <span class="student-details-label">Credits Completed</span>
+                <span class="student-details-value"
+                      id="panelStudentCredits"></span>
+            </div>
+
+            <div class="student-details-item">
+                <span class="student-details-label">Academic Standing</span>
+                <span class="student-details-value"
+                      id="panelStudentStanding"></span>
+            </div>
+
+            <div class="student-details-item">
+                <span class="student-details-label">Degree Progress</span>
+                <span class="student-details-value"
+                      id="panelStudentProgress"></span>
+            </div>
+
+            <div class="student-details-item full">
+                <span class="student-details-label">Academic Advisor</span>
+                <span class="student-details-value"
+                      id="panelStudentAdvisor"></span>
+            </div>
+
+            <div class="student-details-item full">
+                <span class="student-details-label">Email</span>
+                <span class="student-details-value"
+                      id="panelStudentEmail"></span>
+            </div>
+
+        </div>
+
+
+        <div class="student-panel-actions">
+            @if (isAdmin)
+            {
+<button type="button"
+        class="student-panel-action edit"
+        onclick="openEditStudentPanel()">
+    Edit Student
+</button>   }
+
+            <button type="button"
+                    class="student-panel-action"
+                    onclick="openFullStudentDetailsPanel()">
+                Full Details
+            </button>
+
+            @if (isAdmin)
+            {
+<button type="button"
+        class="student-panel-action"
+        onclick="openDeleteStudentPanel()">
+    Delete
+</button>   }
+        </div>
+    </div>
+</div>
+
+
+<!-- =========================================================
+     FULL DETAILS
+     ========================================================= -->
+<div class="student-full-panel"
+     id="fullStudentDetailsPanel">
+
+    <div class="student-full-hero">
+        <button type="button"
+                class="student-full-close"
+                onclick="closeAllStudentPanels()">
+            ×
+        </button>
+
+        <div class="student-full-avatar"
+             id="fullStudentInitials">
+        </div>
+
+        <div class="student-full-heading">
+            <div class="student-full-kicker">
+                Academic Student Profile
+            </div>
+
+            <h2 class="student-full-name"
+                id="fullStudentName">
+            </h2>
+
+            <div class="student-full-major"
+                 id="fullStudentMajor">
+            </div>
+
+            <div class="student-full-level"
+                 id="fullStudentLevel">
+            </div>
+        </div>
+    </div>
+
+
+    <div class="student-full-body">
+
+        <div class="student-full-section">
+            <div class="student-full-section-title">
+                Academic Summary
+            </div>
+
+            <div class="student-facts-grid">
+                <div class="student-fact-box">
+                    <span class="student-fact-number"
+                          id="fullStudentGpa"></span>
+                    <span class="student-fact-caption">GPA</span>
+                </div>
+
+                <div class="student-fact-box">
+                    <span class="student-fact-number"
+                          id="fullStudentCredits"></span>
+                    <span class="student-fact-caption">Credits Completed</span>
+                </div>
+
+                <div class="student-fact-box">
+                    <span class="student-fact-number"
+                          id="fullStudentId"></span>
+                    <span class="student-fact-caption">Student ID</span>
+                </div>
+
+                <div class="student-fact-box">
+                    <span class="student-fact-number"
+                          id="fullStudentAge"></span>
+                    <span class="student-fact-caption">Age</span>
+                </div>
+
+                <div class="student-fact-box">
+                    <span class="student-fact-number"
+                          id="fullStudentStanding"></span>
+                    <span class="student-fact-caption">Academic Standing</span>
+                </div>
+
+                <div class="student-fact-box">
+                    <span class="student-fact-number"
+                          id="fullStudentProgressNumber"></span>
+                    <span class="student-fact-caption">Degree Progress</span>
+                </div>
+            </div>
+        </div>
+
+
+        <div class="student-full-section">
+            <div class="student-full-section-title">
+                Degree Progress
+            </div>
+
+            <div class="student-progress-head">
+                <span>Program Completion</span>
+                <span id="fullStudentProgressText"></span>
+            </div>
+
+            <div class="student-progress-track">
+                <div class="student-progress-fill"
+                     id="fullStudentProgressBar"
+                     style="width:0%;">
+                </div>
+            </div>
+        </div>
+
+
+        <div class="student-full-section">
+            <div class="student-full-section-title">
+                Academic Advisor
+            </div>
+
+            <div class="student-advisor-box">
+                <div class="student-advisor-box-name"
+                     id="fullStudentAdvisorName">
+                </div>
+
+                <div class="student-advisor-box-meta"
+                     id="fullStudentAdvisorSubject">
+                </div>
+
+                <div class="student-advisor-box-meta"
+                     id="fullStudentAdvisorEmail">
+                </div>
+            </div>
+        </div>
+
+
+        <div class="student-full-section">
+            <div class="student-full-section-title">
+                Contact Information
+            </div>
+
+            <div class="student-contact-grid">
+                <div class="student-contact-item">
+                    <span class="student-contact-label">Email</span>
+                    <span class="student-contact-value"
+                          id="fullStudentEmail"></span>
+                </div>
+
+                <div class="student-contact-item">
+                    <span class="student-contact-label">Major</span>
+                    <span class="student-contact-value"
+                          id="fullStudentMajorBox"></span>
+                </div>
+
+                <div class="student-contact-item">
+                    <span class="student-contact-label">Level</span>
+                    <span class="student-contact-value"
+                          id="fullStudentLevelBox"></span>
+                </div>
+
+                <div class="student-contact-item">
+                    <span class="student-contact-label">Academic Standing</span>
+                    <span class="student-contact-value"
+                          id="fullStudentStandingBox"></span>
+                </div>
+            </div>
+        </div>
+
+
+        <div class="student-panel-actions">
+            <button type="button"
+                    class="student-panel-action"
+                    onclick="backFromFullStudentDetails()">
+                Back
+            </button>
+
+            @if (isAdmin)
+            {
+<button type="button"
+        class="student-panel-action edit"
+        onclick="openEditStudentPanel()">
+    Edit Student
+</button>   }
+        </div>
+    </div>
+</div>
+
+<!-- =========================================================
+     ADD STUDENT
+     ========================================================= -->
+<div class="student-form-panel"
+     id="addStudentPanel">
+
+    <div class="student-panel-header">
+        <div class="student-panel-small">
+            Student Management
+        </div>
+
+        <h2>Add New Student</h2>
+
+        <p>
+            Add a student and their academic information.
+        </p>
+
+        <button type="button"
+                class="student-panel-close"
+                onclick="closeAllStudentPanels()">
+            ×
+        </button>
+    </div>
+
+
+    @using (Html.BeginForm(
+        "Create",
+        "Students",
+        FormMethod.Post,
+        new { id = "addStudentForm" }))
+    {
+@Html.AntiForgeryToken()
+
+                <div class="student-panel-body">
+
+                    <input type="hidden"
+                           name="Major"
+                           id="addStudentMajorValue" />
+
+                    <div class="student-form-grid">
+
+                        <!-- NAME - FULL WIDTH -->
+
+                        <div class="student-form-field full">
+                            <label>Name</label>
+
+                            <input name="Name"
+                                   class="student-input"
+                                   required />
+                        </div>
+
+
+                        <!-- AGE + LEVEL -->
+
+                        <div class="student-form-field">
+                            <label>Age</label>
+
+                            <input type="number"
+                                   name="Age"
+                                   class="student-input"
+                                   min="15"
+                                   max="100"
+                                   required />
+                        </div>
+
+
+                        <div class="student-form-field">
+                            <label>Level</label>
+
+                            <input name="Level"
+                                   class="student-input"
+                                   placeholder="Example: Level 7"
+                                   required />
+                        </div>
+
+
+                        <!-- MAJOR + GPA -->
+
+                        <div class="student-form-field">
+                            <label>Major</label>
+
+                            <select id="addStudentMajorSelect"
+                                    class="student-input"
+                                    required>
+
+                                <option value="">
+                                    Select Major
+                                </option>
+
+                                @foreach (var major in mainMajors)
+                                {
+                <option value="@major">
+                    @major
+                </option>}
+
+                                <option value="Other">
+                                    Other
+                                </option>
+
+                            </select>
+                        </div>
+
+
+                        <div class="student-form-field">
+                            <label>GPA</label>
+
+                            <input type="number"
+                                   name="GPA"
+                                   class="student-input"
+                                   min="0"
+                                   max="5"
+                                   step="0.01"
+                                   required />
+                        </div>
+
+
+                        <!-- OTHER MAJOR - FULL WIDTH -->
+
+                        <div class="student-form-field full student-other-major"
+                             id="addOtherMajorField">
+
+                            <label>
+                                Enter Major
+                            </label>
+
+                            <input type="text"
+                                   id="addOtherMajorInput"
+                                   class="student-input"
+                                   placeholder="Example: Chemistry" />
+
+                        </div>
+
+
+                        <!-- CREDITS + DEGREE PROGRESS -->
+
+                        <div class="student-form-field">
+                            <label>Credits Completed</label>
+
+                            <input type="number"
+                                   name="CreditsCompleted"
+                                   class="student-input"
+                                   min="0"
+                                   value="0"
+                                   required />
+                        </div>
+
+
+                        <div class="student-form-field">
+                            <label>Degree Progress</label>
+
+                            <input type="number"
+                                   name="DegreeProgress"
+                                   class="student-input"
+                                   min="0"
+                                   max="100"
+                                   value="0"
+                                   required />
+                        </div>
+
+
+                        <!-- ACADEMIC STANDING + EMAIL -->
+
+                        <div class="student-form-field">
+                            <label>Academic Standing (Optional)</label>
+
+                            <input name="AcademicStanding"
+                                   class="student-input"
+                                   placeholder="Example: Good Standing" />
+                        </div>
+
+
+                        <div class="student-form-field">
+                            <label>Email</label>
+
+                            <input type="email"
+                                   name="Email"
+                                   class="student-input"
+                                   required />
+                        </div>
+
+
+                        <!-- ACADEMIC ADVISOR + IMAGE PATH -->
+
+                        <div class="student-form-field">
+                            <label>Academic Advisor (Optional)</label>
+
+                            <select name="TeacherId"
+                                    class="student-input">
+
+                                <option value="">
+                                    Not Assigned
+                                </option>
+
+                                @foreach (var teacher in teachers)
+                                {
+                <option value="@teacher.TeacherId">
+                    @teacher.Name — @teacher.Subject
+                </option>}
+
+                            </select>
+
+                            <div class="student-form-help">
+                                Select a faculty member to serve as the student's academic advisor.
+                            </div>
+                        </div>
+
+
+                        <div class="student-form-field">
+                            <label>Image Path (Optional)</label>
+
+                            <input name="ImagePath"
+                                   class="student-input"
+                                   placeholder="/images/students/student-name.png" />
+                        </div>
+
+                    </div>
+
+
+                    <div class="student-form-actions">
+
+                        <button type="button"
+                                class="student-cancel-button"
+                                onclick="closeAllStudentPanels()">
+                            Cancel
+                        </button>
+
+                        <button type="submit"
+                                class="student-save-button">
+                            Add Student
+                        </button>
+
+                    </div>
+
+                </div>}
+
+</div>
+
+<!-- =========================================================
+     EDIT STUDENT
+     ========================================================= -->
+<div class="student-form-panel"
+     id="editStudentPanel">
+
+    <div class="student-panel-header">
+
+        <div class="student-panel-small">
+            Student Management
+        </div>
+
+        <h2>Edit Student</h2>
+
+        <p>
+            Update the student's academic information.
+        </p>
+
+        <button type="button"
+                class="student-panel-close"
+                onclick="backToStudentDetails()">
+            ×
+        </button>
+
+    </div>
+
+
+    @using (Html.BeginForm(
+        "Edit",
+        "Students",
+        FormMethod.Post,
+        new { id = "editStudentForm" }))
+    {
+        @Html.AntiForgeryToken()
+
+        <div class="student-panel-body">
+
+            <input type="hidden"
+                   name="StudentId"
+                   id="editStudentId" />
+
+            <input type="hidden"
+                   name="Major"
+                   id="editStudentMajorValue" />
+
+
+            <div class="student-form-grid">
+
+                <!-- NAME - FULL WIDTH -->
+
+                <div class="student-form-field full">
+                    <label>Name</label>
+
+                    <input name="Name"
+                           id="editStudentName"
+                           class="student-input"
+                           required />
+                </div>
+
+
+                <!-- AGE + LEVEL -->
+
+                <div class="student-form-field">
+                    <label>Age</label>
+
+                    <input type="number"
+                           name="Age"
+                           id="editStudentAge"
+                           class="student-input"
+                           min="15"
+                           max="100"
+                           required />
+                </div>
+
+
+                <div class="student-form-field">
+                    <label>Level</label>
+
+                    <input name="Level"
+                           id="editStudentLevel"
+                           class="student-input"
+                           required />
+                </div>
+
+
+                <!-- MAJOR + GPA -->
+
+                <div class="student-form-field">
+                    <label>Major</label>
+
+                    <select id="editStudentMajorSelect"
+                            class="student-input"
+                            required>
+
+                        <option value="">
+                            Select Major
+                        </option>
+
+                        @foreach (var major in mainMajors)
+                        {
+                            <option value="@major">
+                                @major
+                            </option>
+                        }
+
+                        <option value="Other">
+                            Other
+                        </option>
+
+                    </select>
+                </div>
+
+
+                <div class="student-form-field">
+                    <label>GPA</label>
+
+                    <input type="number"
+                           name="GPA"
+                           id="editStudentGpa"
+                           class="student-input"
+                           min="0"
+                           max="5"
+                           step="0.01"
+                           required />
+                </div>
+
+
+                <!-- OTHER MAJOR - FULL WIDTH -->
+
+                <div class="student-form-field full student-other-major"
+                     id="editOtherMajorField">
+
+                    <label>
+                        Enter Major
+                    </label>
+
+                    <input type="text"
+                           id="editOtherMajorInput"
+                           class="student-input" />
+
+                </div>
+
+
+                <!-- CREDITS + DEGREE PROGRESS -->
+
+                <div class="student-form-field">
+                    <label>Credits Completed</label>
+
+                    <input type="number"
+                           name="CreditsCompleted"
+                           id="editStudentCredits"
+                           class="student-input"
+                           min="0"
+                           required />
+                </div>
+
+
+                <div class="student-form-field">
+                    <label>Degree Progress</label>
+
+                    <input type="number"
+                           name="DegreeProgress"
+                           id="editStudentProgress"
+                           class="student-input"
+                           min="0"
+                           max="100"
+                           required />
+                </div>
+
+
+                <!-- ACADEMIC STANDING + EMAIL -->
+
+                <div class="student-form-field">
+                    <label>Academic Standing (Optional)</label>
+
+                    <input name="AcademicStanding"
+                           id="editStudentStanding"
+                           class="student-input" />
+                </div>
+
+
+                <div class="student-form-field">
+                    <label>Email</label>
+
+                    <input type="email"
+                           name="Email"
+                           id="editStudentEmail"
+                           class="student-input"
+                           required />
+                </div>
+
+
+                <!-- ACADEMIC ADVISOR + IMAGE PATH -->
+
+                <div class="student-form-field">
+
+                    <label>
+                        Academic Advisor (Optional)
+                    </label>
+
+                    <select name="TeacherId"
+                            id="editStudentTeacherId"
+                            class="student-input">
+
+                        <option value="">
+                            Not Assigned
+                        </option>
+
+                        @foreach (var teacher in teachers)
+                        {
+                            <option value="@teacher.TeacherId">
+                                @teacher.Name — @teacher.Subject
+                            </option>
+                        }
+
+                    </select>
+
+                </div>
+
+
+                <div class="student-form-field">
+
+                    <label>
+                        Image Path (Optional)
+                    </label>
+
+                    <input name="ImagePath"
+                           id="editStudentImagePath"
+                           class="student-input" />
+
+                </div>
+
+            </div>
+
+
+            <div class="student-form-actions">
+
+                <button type="button"
+                        class="student-cancel-button"
+                        onclick="backToStudentDetails()">
+                    Cancel
+                </button>
+
+                <button type="submit"
+                        class="student-save-button">
+                    Save Changes
+                </button>
+
+            </div>
+
+        </div>
+    }
+
+</div>
+
+
+<!-- =========================================================
+     DELETE STUDENT
+     ========================================================= -->
+<div class="student-delete-panel"
+     id="deleteStudentPanel">
+
+    <div class="student-panel-header">
+        <div class="student-panel-small">
+            Student Management
+        </div>
+
+        <h2>Delete Student</h2>
+
+        <p>
+            Please confirm that you want to permanently remove this student.
+        </p>
+
+        <button type="button"
+                class="student-panel-close"
+                onclick="backFromStudentDelete()">
+            ×
+        </button>
+    </div>
+
+
+    @using (Html.BeginForm(
+        "Delete",
+        "Students",
+        FormMethod.Post))
+    {
+@Html.AntiForgeryToken()
+
+                <div class="student-panel-body">
+
+                    <input type="hidden"
+                           name="id"
+                           id="deleteStudentId" />
+
+                    <div class="student-delete-warning">
+                        <div class="student-delete-warning-title">
+                            Delete Confirmation
+                        </div>
+
+                        <strong id="deleteStudentName"></strong>
+                        <br />
+                        <span id="deleteStudentMajor"></span>
+
+                        <br /><br />
+
+                        This student will be permanently deleted.
+                        This action cannot be undone.
+                    </div>
+
+
+                    <div class="student-form-actions">
+                        <button type="button"
+                                class="student-cancel-button"
+                                onclick="backFromStudentDelete()">
+                            Cancel
+                        </button>
+
+                        <button type="submit"
+                                class="student-save-button">
+                            Delete Student
+                        </button>
+                    </div>
+                </div>}
+</div>
+
+
+<script>
+    var studentAdminAccess = @(isAdmin ? "true" : "false");
+
+    var mainStudentMajors = [
+        "Software Engineering",
+        "Computer Science",
+        "Biology",
+        "Business Administration",
+        "Mechanical Engineering"
+    ];
+
+
+    var studentsData = [
+        @for (int i = 0; i < students.Count; i++)
+        {
+            var student = students[i];
+
+            var advisorName =
+                student.Teacher == null
+                    ? ""
+                    : student.Teacher.Name;
+
+            var advisorSubject =
+                student.Teacher == null
+                    ? ""
+                    : student.Teacher.Subject;
+
+            var advisorEmail =
+                student.Teacher == null
+                    ? ""
+                    : student.Teacher.Email;
+
+            <text>
+            {
+                id: @student.StudentId,
+
+                name:
+                    '@Html.Raw(System.Web.HttpUtility.JavaScriptStringEncode(student.Name ?? ""))',
+
+                age: @student.Age,
+
+                major:
+                    '@Html.Raw(System.Web.HttpUtility.JavaScriptStringEncode(student.Major ?? ""))',
+
+                level:
+                    '@Html.Raw(System.Web.HttpUtility.JavaScriptStringEncode(student.Level ?? ""))',
+
+                gpa:
+                    '@student.GPA.ToString(System.Globalization.CultureInfo.InvariantCulture)',
+
+                credits: @student.CreditsCompleted,
+
+                progress: @student.DegreeProgress,
+
+                standing:
+                    '@Html.Raw(System.Web.HttpUtility.JavaScriptStringEncode(student.AcademicStanding ?? ""))',
+
+                email:
+                    '@Html.Raw(System.Web.HttpUtility.JavaScriptStringEncode(student.Email ?? ""))',
+
+                imagePath:
+                    '@Html.Raw(System.Web.HttpUtility.JavaScriptStringEncode(student.ImagePath ?? ""))',
+
+                teacherId:
+                    '@(student.TeacherId.HasValue ? student.TeacherId.Value.ToString() : "")',
+
+                advisorName:
+                    '@Html.Raw(System.Web.HttpUtility.JavaScriptStringEncode(advisorName ?? ""))',
+
+                advisorSubject:
+                    '@Html.Raw(System.Web.HttpUtility.JavaScriptStringEncode(advisorSubject ?? ""))',
+
+                advisorEmail:
+                    '@Html.Raw(System.Web.HttpUtility.JavaScriptStringEncode(advisorEmail ?? ""))'
+            }@(i < students.Count - 1 ? "," : "")
+            </text>
+        }
+    ];
+
+
+    var selectedStudent = null;
+
+
+    function isMainStudentMajor(major) {
+        return mainStudentMajors.indexOf(major) !== -1;
+    }
+
+
+    function getStudentInitials(name) {
+        if (!name) {
+            return "";
+        }
+
+        var parts =
+            name.trim().split(/\s+/);
+
+        if (parts.length === 1) {
+            return parts[0].charAt(0).toUpperCase();
+        }
+
+        return (
+            parts[0].charAt(0) +
+            parts[parts.length - 1].charAt(0)
+        ).toUpperCase();
+    }
+
+
+    function setStudentAvatar(
+        containerId,
+        name,
+        imagePath
+    ) {
+        var container =
+            document.getElementById(containerId);
+
+        if (!container) {
+            return;
+        }
+
+        container.innerHTML = "";
+
+        if (
+            imagePath &&
+            imagePath.trim() !== ""
+        ) {
+            var image =
+                document.createElement("img");
+
+            image.src = imagePath;
+            image.alt = name || "Student";
+
+            image.onerror =
+                function () {
+                    container.innerHTML = "";
+                    container.textContent =
+                        getStudentInitials(name);
+                };
+
+            container.appendChild(image);
+            return;
+        }
+
+        container.textContent =
+            getStudentInitials(name);
+    }
+
+
+    function hideStudentPanelsOnly() {
+        var panels = [
+            "studentDetailsPanel",
+            "fullStudentDetailsPanel",
+            "addStudentPanel",
+            "editStudentPanel",
+            "deleteStudentPanel"
+        ];
+
+        for (var i = 0; i < panels.length; i++) {
+            document
+                .getElementById(panels[i])
+                .classList
+                .remove("open");
+        }
+    }
+
+
+    function showStudentOverlay() {
+        document
+            .getElementById("studentOverlay")
+            .classList
+            .add("open");
+    }
+
+
+    function closeAllStudentPanels() {
+        selectedStudent = null;
+
+        hideStudentPanelsOnly();
+
+        document
+            .getElementById("studentOverlay")
+            .classList
+            .remove("open");
+    }
+
+
+    function normalizedProgress(value) {
+        var progress =
+            parseInt(value || 0, 10);
+
+        if (progress < 0) {
+            progress = 0;
+        }
+
+        if (progress > 100) {
+            progress = 100;
+        }
+
+        return progress;
+    }
+
+
+    function fillStudentOverview() {
+        if (!selectedStudent) {
+            return;
+        }
+
+        setStudentAvatar(
+            "panelStudentInitials",
+            selectedStudent.name,
+            selectedStudent.imagePath
+        );
+
+        document.getElementById("panelStudentName").textContent =
+            selectedStudent.name || "Student";
+
+        document.getElementById("panelStudentMajor").textContent =
+            selectedStudent.major || "Not Assigned";
+
+        document.getElementById("panelStudentLevel").textContent =
+            selectedStudent.level || "Level Not Assigned";
+
+        document.getElementById("panelStudentId").textContent =
+            selectedStudent.id;
+
+        document.getElementById("panelStudentAge").textContent =
+            selectedStudent.age || "—";
+
+        document.getElementById("panelStudentGpa").textContent =
+            selectedStudent.gpa || "0.00";
+
+        document.getElementById("panelStudentCredits").textContent =
+            selectedStudent.credits || 0;
+
+        document.getElementById("panelStudentStanding").textContent =
+            selectedStudent.standing || "Not Assigned";
+
+        document.getElementById("panelStudentProgress").textContent =
+            normalizedProgress(selectedStudent.progress) + "%";
+
+        document.getElementById("panelStudentAdvisor").textContent =
+            selectedStudent.advisorName || "Not Assigned";
+
+        document.getElementById("panelStudentEmail").textContent =
+            selectedStudent.email || "Not Assigned";
+    }
+
+
+    function openStudentPanel(index) {
+        var student =
+            studentsData[index];
+
+        if (!student) {
+            return;
+        }
+
+        selectedStudent = student;
+
+        fillStudentOverview();
+
+        hideStudentPanelsOnly();
+        showStudentOverlay();
+
+        document
+            .getElementById("studentDetailsPanel")
+            .classList
+            .add("open");
+    }
+
+
+    function fillFullStudentDetails() {
+        if (!selectedStudent) {
+            return;
+        }
+
+        var progress =
+            normalizedProgress(
+                selectedStudent.progress
+            );
+
+        setStudentAvatar(
+            "fullStudentInitials",
+            selectedStudent.name,
+            selectedStudent.imagePath
+        );
+
+        document.getElementById("fullStudentName").textContent =
+            selectedStudent.name || "Student";
+
+        document.getElementById("fullStudentMajor").textContent =
+            selectedStudent.major || "Not Assigned";
+
+        document.getElementById("fullStudentLevel").textContent =
+            selectedStudent.level || "Level Not Assigned";
+
+        document.getElementById("fullStudentGpa").textContent =
+            selectedStudent.gpa || "0.00";
+
+        document.getElementById("fullStudentCredits").textContent =
+            selectedStudent.credits || 0;
+
+        document.getElementById("fullStudentId").textContent =
+            selectedStudent.id;
+
+        document.getElementById("fullStudentAge").textContent =
+            selectedStudent.age || "—";
+
+        document.getElementById("fullStudentStanding").textContent =
+            selectedStudent.standing || "Not Assigned";
+
+        document.getElementById("fullStudentProgressNumber").textContent =
+            progress + "%";
+
+        document.getElementById("fullStudentProgressText").textContent =
+            progress + "%";
+
+        document.getElementById("fullStudentProgressBar").style.width =
+            progress + "%";
+
+        document.getElementById("fullStudentAdvisorName").textContent =
+            selectedStudent.advisorName || "Not Assigned";
+
+        document.getElementById("fullStudentAdvisorSubject").textContent =
+            selectedStudent.advisorSubject
+                ? "Subject: " + selectedStudent.advisorSubject
+                : "No advisor subject available";
+
+        document.getElementById("fullStudentAdvisorEmail").textContent =
+            selectedStudent.advisorEmail
+                ? "Email: " + selectedStudent.advisorEmail
+                : "No advisor email available";
+
+        document.getElementById("fullStudentEmail").textContent =
+            selectedStudent.email || "Not Assigned";
+
+        document.getElementById("fullStudentMajorBox").textContent =
+            selectedStudent.major || "Not Assigned";
+
+        document.getElementById("fullStudentLevelBox").textContent =
+            selectedStudent.level || "Not Assigned";
+
+        document.getElementById("fullStudentStandingBox").textContent =
+            selectedStudent.standing || "Not Assigned";
+    }
+
+
+    function openFullStudentDetailsPanel() {
+        if (!selectedStudent) {
+            return;
+        }
+
+        fillFullStudentDetails();
+
+        hideStudentPanelsOnly();
+        showStudentOverlay();
+
+        document
+            .getElementById("fullStudentDetailsPanel")
+            .classList
+            .add("open");
+    }
+
+
+    function backFromFullStudentDetails() {
+        fillStudentOverview();
+
+        hideStudentPanelsOnly();
+        showStudentOverlay();
+
+        document
+            .getElementById("studentDetailsPanel")
+            .classList
+            .add("open");
+    }
+
+
+    /* =========================================================
+       ADD MAJOR
+       ========================================================= */
+
+    function updateAddStudentMajor() {
+        var select =
+            document.getElementById("addStudentMajorSelect");
+
+        var otherField =
+            document.getElementById("addOtherMajorField");
+
+        var otherInput =
+            document.getElementById("addOtherMajorInput");
+
+        var hiddenMajor =
+            document.getElementById("addStudentMajorValue");
+
+        if (select.value === "Other") {
+            otherField.classList.add("open");
+            otherInput.required = true;
+
+            hiddenMajor.value =
+                otherInput.value.trim();
+        }
+        else {
+            otherField.classList.remove("open");
+            otherInput.required = false;
+            otherInput.value = "";
+
+            hiddenMajor.value =
+                select.value;
+        }
+    }
+
+
+    function openAddStudentPanel() {
+        if (!studentAdminAccess) {
+            return;
+        }
+
+        selectedStudent = null;
+
+        var form =
+            document.getElementById("addStudentForm");
+
+        if (form) {
+            form.reset();
+        }
+
+        document.getElementById("addStudentMajorValue").value = "";
+        document.getElementById("addOtherMajorInput").value = "";
+
+        updateAddStudentMajor();
+
+        hideStudentPanelsOnly();
+        showStudentOverlay();
+
+        document
+            .getElementById("addStudentPanel")
+            .classList
+            .add("open");
+    }
+
+
+    /* =========================================================
+       EDIT MAJOR
+       ========================================================= */
+
+    function updateEditStudentMajor() {
+        var select =
+            document.getElementById("editStudentMajorSelect");
+
+        var otherField =
+            document.getElementById("editOtherMajorField");
+
+        var otherInput =
+            document.getElementById("editOtherMajorInput");
+
+        var hiddenMajor =
+            document.getElementById("editStudentMajorValue");
+
+        if (select.value === "Other") {
+            otherField.classList.add("open");
+            otherInput.required = true;
+
+            hiddenMajor.value =
+                otherInput.value.trim();
+        }
+        else {
+            otherField.classList.remove("open");
+            otherInput.required = false;
+            otherInput.value = "";
+
+            hiddenMajor.value =
+                select.value;
+        }
+    }
+
+
+    function openEditStudentPanel() {
+        if (!studentAdminAccess) {
+            return;
+        }
+
+        if (!selectedStudent) {
+            return;
+        }
+
+        document.getElementById("editStudentId").value =
+            selectedStudent.id;
+
+        document.getElementById("editStudentName").value =
+            selectedStudent.name || "";
+
+        document.getElementById("editStudentAge").value =
+            selectedStudent.age || "";
+
+        document.getElementById("editStudentLevel").value =
+            selectedStudent.level || "";
+
+        var editMajor =
+            selectedStudent.major || "";
+
+        if (isMainStudentMajor(editMajor)) {
+            document.getElementById("editStudentMajorSelect").value =
+                editMajor;
+
+            document.getElementById("editOtherMajorInput").value =
+                "";
+        }
+        else {
+            document.getElementById("editStudentMajorSelect").value =
+                "Other";
+
+            document.getElementById("editOtherMajorInput").value =
+                editMajor;
+        }
+
+        updateEditStudentMajor();
+
+        if (
+            document.getElementById("editStudentMajorSelect").value === "Other"
+        ) {
+            document.getElementById("editOtherMajorInput").value =
+                editMajor;
+
+            document.getElementById("editStudentMajorValue").value =
+                editMajor;
+        }
+
+        document.getElementById("editStudentGpa").value =
+            selectedStudent.gpa || "0";
+
+        document.getElementById("editStudentCredits").value =
+            selectedStudent.credits || 0;
+
+        document.getElementById("editStudentProgress").value =
+            normalizedProgress(selectedStudent.progress);
+
+        document.getElementById("editStudentStanding").value =
+            selectedStudent.standing || "";
+
+        document.getElementById("editStudentEmail").value =
+            selectedStudent.email || "";
+
+        document.getElementById("editStudentTeacherId").value =
+            selectedStudent.teacherId || "";
+
+        document.getElementById("editStudentImagePath").value =
+            selectedStudent.imagePath || "";
+
+        hideStudentPanelsOnly();
+        showStudentOverlay();
+
+        document
+            .getElementById("editStudentPanel")
+            .classList
+            .add("open");
+    }
+
+
+    function backToStudentDetails() {
+        if (!selectedStudent) {
+            closeAllStudentPanels();
+            return;
+        }
+
+        fillStudentOverview();
+
+        hideStudentPanelsOnly();
+        showStudentOverlay();
+
+        document
+            .getElementById("studentDetailsPanel")
+            .classList
+            .add("open");
+    }
+
+
+    /* =========================================================
+       DELETE
+       ========================================================= */
+
+    function openDeleteStudentPanel() {
+        if (!studentAdminAccess) {
+            return;
+        }
+
+        if (!selectedStudent) {
+            return;
+        }
+
+        document.getElementById("deleteStudentId").value =
+            selectedStudent.id;
+
+        document.getElementById("deleteStudentName").textContent =
+            selectedStudent.name || "Student";
+
+        document.getElementById("deleteStudentMajor").textContent =
+            selectedStudent.major || "Not Assigned";
+
+        hideStudentPanelsOnly();
+        showStudentOverlay();
+
+        document
+            .getElementById("deleteStudentPanel")
+            .classList
+            .add("open");
+    }
+
+
+    function backFromStudentDelete() {
+        backToStudentDetails();
+    }
+
+
+    /* =========================================================
+       MAJOR EVENTS
+       ========================================================= */
+
+    document
+        .getElementById("addStudentMajorSelect")
+        .addEventListener(
+            "change",
+            updateAddStudentMajor
+        );
+
+    document
+        .getElementById("addOtherMajorInput")
+        .addEventListener(
+            "input",
+            updateAddStudentMajor
+        );
+
+    document
+        .getElementById("editStudentMajorSelect")
+        .addEventListener(
+            "change",
+            updateEditStudentMajor
+        );
+
+    document
+        .getElementById("editOtherMajorInput")
+        .addEventListener(
+            "input",
+            updateEditStudentMajor
+        );
+
+
+    document
+        .getElementById("addStudentForm")
+        .addEventListener(
+            "submit",
+            function (event) {
+                updateAddStudentMajor();
+
+                var major =
+                    document
+                        .getElementById("addStudentMajorValue")
+                        .value
+                        .trim();
+
+                if (!major) {
+                    event.preventDefault();
+
+                    document
+                        .getElementById("addStudentMajorSelect")
+                        .focus();
+                }
+            }
+        );
+
+
+    document
+        .getElementById("editStudentForm")
+        .addEventListener(
+            "submit",
+            function (event) {
+                updateEditStudentMajor();
+
+                var major =
+                    document
+                        .getElementById("editStudentMajorValue")
+                        .value
+                        .trim();
+
+                if (!major) {
+                    event.preventDefault();
+
+                    document
+                        .getElementById("editStudentMajorSelect")
+                        .focus();
+                }
+            }
+        );
+
+
+    /* =========================================================
+       FILTER MENU + MULTI CHECKBOX FILTERING
+       ========================================================= */
+
+    (function () {
+        var wrap =
+            document.getElementById("studentFilterWrap");
+
+        var button =
+            document.getElementById("studentFilterButton");
+
+        var menu =
+            document.getElementById("studentFilterMenu");
+
+        var clearButton =
+            document.getElementById("studentFilterClear");
+
+        var allCheckbox =
+            document.getElementById("studentFilterAll");
+
+        var countBadge =
+            document.getElementById("studentFilterCount");
+
+        var checkboxes =
+            document.querySelectorAll(
+                ".student-filter-checkbox"
+            );
+
+        var cards =
+            document.querySelectorAll(
+                ".student-card"
+            );
+
+
+        function openFilterMenu() {
+            menu.classList.add("open");
+            button.classList.add("open");
+            button.setAttribute(
+                "aria-expanded",
+                "true"
+            );
+        }
+
+
+        function closeFilterMenu() {
+            menu.classList.remove("open");
+            button.classList.remove("open");
+            button.setAttribute(
+                "aria-expanded",
+                "false"
+            );
+        }
+
+
+        function getSelectedMajors() {
+            var selected = [];
+
+            for (var i = 0; i < checkboxes.length; i++) {
+                if (
+                    checkboxes[i].value !== "All" &&
+                    checkboxes[i].checked
+                ) {
+                    selected.push(
+                        checkboxes[i].value
+                    );
+                }
+            }
+
+            return selected;
+        }
+
+
+        function updateFilterBadge(selected) {
+            if (
+                allCheckbox.checked ||
+                selected.length === 0
+            ) {
+                countBadge.classList.remove("show");
+                countBadge.textContent = "";
+                return;
+            }
+
+            countBadge.textContent =
+                selected.length;
+
+            countBadge.classList.add("show");
+        }
+
+
+        function applyFilters() {
+            var selected =
+                getSelectedMajors();
+
+            if (
+                allCheckbox.checked ||
+                selected.length === 0
+            ) {
+                for (var i = 0; i < cards.length; i++) {
+                    cards[i].style.display = "";
+                }
+
+                updateFilterBadge([]);
+                return;
+            }
+
+            for (var c = 0; c < cards.length; c++) {
+                var major =
+                    cards[c].getAttribute(
+                        "data-major"
+                    );
+
+                cards[c].style.display =
+                    selected.indexOf(major) !== -1
+                        ? ""
+                        : "none";
+            }
+
+            updateFilterBadge(selected);
+        }
+
+
+        button.addEventListener(
+            "click",
+            function (event) {
+                event.stopPropagation();
+
+                if (
+                    menu.classList.contains("open")
+                ) {
+                    closeFilterMenu();
+                }
+                else {
+                    openFilterMenu();
+                }
+            }
+        );
+
+
+        for (var i = 0; i < checkboxes.length; i++) {
+            checkboxes[i].addEventListener(
+                "change",
+                function () {
+                    if (this.value === "All") {
+                        if (this.checked) {
+                            for (
+                                var j = 0;
+                                j < checkboxes.length;
+                                j++
+                            ) {
+                                if (
+                                    checkboxes[j].value !== "All"
+                                ) {
+                                    checkboxes[j].checked = false;
+                                }
+                            }
+                        }
+                    }
+                    else if (this.checked) {
+                        allCheckbox.checked = false;
+                    }
+
+                    var selected =
+                        getSelectedMajors();
+
+                    if (selected.length === 0) {
+                        allCheckbox.checked = true;
+                    }
+
+                    applyFilters();
+                }
+            );
+        }
+
+
+        clearButton.addEventListener(
+            "click",
+            function () {
+                for (
+                    var i = 0;
+                    i < checkboxes.length;
+                    i++
+                ) {
+                    checkboxes[i].checked =
+                        checkboxes[i].value === "All";
+                }
+
+                applyFilters();
+            }
+        );
+
+
+        document.addEventListener(
+            "click",
+            function (event) {
+                if (
+                    wrap &&
+                    !wrap.contains(event.target)
+                ) {
+                    closeFilterMenu();
+                }
+            }
+        );
+
+
+        applyFilters();
+    })();
+
+
+    document.addEventListener(
+        "keydown",
+        function (event) {
+            if (event.key === "Escape") {
+                closeAllStudentPanels();
+            }
+
+        }
+
+    );
+</script>

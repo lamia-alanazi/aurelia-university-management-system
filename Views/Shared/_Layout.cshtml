@@ -1,0 +1,672 @@
+﻿<!DOCTYPE html>
+<html>
+
+<head>
+
+    <meta charset="utf-8" />
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0" />
+
+    <title>
+        @ViewBag.Title - Aurelia University Management System
+    </title>
+
+    @Styles.Render("~/Content/css")
+
+    <style>
+
+        /* =========================================================
+           GENERAL
+        ========================================================= */
+
+        html,
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #ffffff !important;
+            color: #111111 !important;
+        }
+
+
+
+        /* =========================================================
+           SIDEBAR
+        ========================================================= */
+
+        .aurelia-sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100px;
+            height: 100vh;
+            background: #1B1F23;
+            z-index: 1040;
+            transform: translateX(-100%);
+            transition: transform 0.35s ease;
+            padding-top: 105px;
+            box-shadow: none;
+        }
+
+
+        body.sidebar-open .aurelia-sidebar {
+            transform: translateX(0);
+        }
+
+
+
+        /* =========================================================
+           LOGO / SIDEBAR TOGGLE
+        ========================================================= */
+
+        .sidebar-toggle {
+            position: fixed;
+            top: 18px;
+            left: 18px;
+            width: 58px;
+            height: 58px;
+            padding: 0;
+            border: none;
+            outline: none;
+            background: transparent !important;
+            box-shadow: none !important;
+            z-index: 1050;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+
+
+            .sidebar-toggle:hover,
+            .sidebar-toggle:focus,
+            .sidebar-toggle:active {
+                background: transparent !important;
+                border: none;
+                outline: none;
+                box-shadow: none !important;
+            }
+
+
+
+        /* =========================================================
+           LOGO
+        ========================================================= */
+
+        .aurelia-logo {
+            position: absolute;
+            width: 42px;
+            height: 42px;
+            display: block;
+            object-fit: contain;
+            transition: opacity 0.25s ease, transform 0.3s ease, filter 0.3s ease;
+        }
+
+
+        .aurelia-logo-dark {
+            opacity: 1;
+            visibility: visible;
+        }
+
+
+        .aurelia-logo-light {
+            opacity: 0;
+            visibility: hidden;
+        }
+
+
+        body.sidebar-open .aurelia-logo-dark {
+            opacity: 0;
+            visibility: hidden;
+        }
+
+
+        body.sidebar-open .aurelia-logo-light {
+            opacity: 1;
+            visibility: visible;
+        }
+
+
+        .sidebar-toggle:hover .aurelia-logo {
+            transform: scale(1.06);
+        }
+
+
+        body.sidebar-open
+        .sidebar-toggle:hover
+        .aurelia-logo-light {
+            filter: drop-shadow( 0 0 6px rgba(255,255,255,0.35) );
+        }
+
+
+
+        /* =========================================================
+           TOP DIVIDER
+        ========================================================= */
+
+        .sidebar-divider {
+            width: calc(100% - 32px);
+            height: 1px;
+            margin: 0 16px 18px 16px;
+            background-color: rgba(255,255,255,0.16);
+        }
+
+
+
+        /* =========================================================
+           NAVIGATION
+        ========================================================= */
+
+        .sidebar-menu {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+
+
+            .sidebar-menu li {
+                margin: 0;
+                padding: 0;
+            }
+
+
+                .sidebar-menu li a {
+                    display: block;
+                    padding: 16px 22px;
+                    color: #ffffff !important;
+                    text-decoration: none;
+                    font-size: 15px;
+                    font-weight: 400;
+                    letter-spacing: 0.3px;
+                    border-left: 2px solid transparent;
+                    white-space: nowrap;
+                    transition: background-color 0.25s ease, border-color 0.25s ease, padding-left 0.25s ease;
+                }
+
+
+                    .sidebar-menu li a:hover,
+                    .sidebar-menu li a:focus {
+                        color: #ffffff !important;
+                        background: rgba(255,255,255,0.06);
+                        border-left-color: #ffffff;
+                        padding-left: 28px;
+                        text-decoration: none;
+                    }
+
+
+
+        /* =========================================================
+           ADMIN ACCESS - BOTTOM
+        ========================================================= */
+
+        .sidebar-admin-area {
+            position: absolute;
+            left: 0;
+            bottom: 22px;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+
+        .sidebar-admin-divider {
+            width: calc(100% - 32px);
+            height: 1px;
+            margin-bottom: 18px;
+            background: rgba(255,255,255,0.16);
+        }
+
+
+        .admin-icon-link,
+        .admin-logout-button {
+            position: relative;
+            width: 46px;
+            height: 46px;
+            padding: 0;
+            border: none;
+            outline: none;
+            background: transparent;
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            text-decoration: none !important;
+            border-radius: 4px;
+            transition: background-color 0.25s ease, transform 0.25s ease;
+        }
+
+
+            .admin-icon-link:hover,
+            .admin-icon-link:focus,
+            .admin-logout-button:hover,
+            .admin-logout-button:focus {
+                background: rgba(255,255,255,0.07);
+                color: #ffffff;
+                outline: none;
+                transform: translateY(-1px);
+            }
+
+
+            .admin-icon-link svg,
+            .admin-logout-button svg {
+                width: 22px;
+                height: 22px;
+                stroke: currentColor;
+                fill: none;
+                stroke-width: 2;
+                stroke-linecap: round;
+                stroke-linejoin: round;
+            }
+
+
+        .admin-logout-form {
+            margin: 0;
+            padding: 0;
+        }
+
+
+
+        /* =========================================================
+           TOOLTIP
+        ========================================================= */
+
+        .admin-tooltip {
+            position: absolute;
+            left: 56px;
+            top: 50%;
+            transform: translateY(-50%) translateX(-4px);
+            padding: 7px 10px;
+            background: #111315;
+            color: #ffffff;
+            font-size: 11px;
+            font-weight: 500;
+            letter-spacing: 0.4px;
+            white-space: nowrap;
+            border-radius: 3px;
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+            transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s ease;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.18);
+        }
+
+
+        .admin-icon-link:hover .admin-tooltip,
+        .admin-icon-link:focus .admin-tooltip,
+        .admin-logout-button:hover .admin-tooltip,
+        .admin-logout-button:focus .admin-tooltip {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(-50%) translateX(0);
+        }
+
+
+
+        /* =========================================================
+           PAGE CONTENT
+        ========================================================= */
+
+        .body-content {
+            min-height: 100vh;
+            width: 100%;
+            margin: 0;
+            padding: 0;
+            background-color: #ffffff !important;
+            color: #111111 !important;
+            transition: margin-left 0.35s ease, width 0.35s ease;
+        }
+
+
+
+        /* =========================================================
+           DESKTOP
+        ========================================================= */
+
+        @@media (min-width: 769px) {
+
+            body.sidebar-open .body-content {
+                margin-left: 100px;
+                width: calc(100% - 100px);
+            }
+        }
+
+
+
+        /* =========================================================
+           MOBILE
+        ========================================================= */
+
+        @@media (max-width: 768px) {
+
+            .aurelia-sidebar {
+                width: 100px;
+            }
+
+
+            .sidebar-toggle {
+                top: 14px;
+                left: 14px;
+                width: 54px;
+                height: 54px;
+            }
+
+
+            .aurelia-logo {
+                width: 40px;
+                height: 40px;
+            }
+
+
+            body.sidebar-open .body-content {
+                margin-left: 0;
+                width: 100%;
+            }
+            /*
+                نخفي Tooltip على الجوال
+                لأنه ما فيه Hover فعلي.
+            */
+
+            .admin-tooltip {
+                display: none;
+            }
+        }
+    </style>
+
+
+    @Scripts.Render("~/bundles/modernizr")
+
+</head>
+
+
+
+<body>
+
+
+    <!-- =========================================================
+         LOGO / SIDEBAR BUTTON
+    ========================================================== -->
+
+    <button type="button"
+            class="sidebar-toggle"
+            id="sidebarToggle"
+            aria-label="Open navigation"
+            aria-expanded="false">
+
+
+        <img src="@Url.Content("~/images/aurelia-symbol-black.png")"
+             alt=""
+             class="aurelia-logo aurelia-logo-dark" />
+
+
+        <img src="@Url.Content("~/images/aurelia-symbol-white.png")"
+             alt=""
+             class="aurelia-logo aurelia-logo-light" />
+
+
+    </button>
+
+
+
+    <!-- =========================================================
+         SIDEBAR
+    ========================================================== -->
+
+    <aside class="aurelia-sidebar"
+           id="aureliaSidebar">
+
+
+        <div class="sidebar-divider"></div>
+
+
+        <ul class="sidebar-menu">
+
+
+            <li>
+                @Html.ActionLink(
+                    "Home",
+                    "Index",
+                    "Home"
+                )
+            </li>
+
+
+            @if (Session["IsAdmin"] != null
+                && Session["IsAdmin"] is bool
+                && (bool)Session["IsAdmin"])
+            {
+                <li>
+                    @Html.ActionLink(
+                        "Students",
+                        "Index",
+                        "Students"
+                    )
+                </li>
+            }
+
+
+            <li>
+                @Html.ActionLink(
+                    "Teachers",
+                    "Index",
+                    "Teachers"
+                )
+            </li>
+
+
+            <li>
+                @Html.ActionLink(
+                    "Rooms",
+                    "Index",
+                    "Rooms"
+                )
+            </li>
+
+
+            <li>
+                @Html.ActionLink(
+                    "Courses",
+                    "Index",
+                    "Courses"
+                )
+            </li>
+
+
+        </ul>
+
+
+
+        <!-- =====================================================
+             ADMIN LOGIN / LOGOUT
+        ====================================================== -->
+
+        <div class="sidebar-admin-area">
+
+
+            <div class="sidebar-admin-divider"></div>
+
+
+            @if (Session["IsAdmin"] != null
+                && Session["IsAdmin"] is bool
+                && (bool)Session["IsAdmin"])
+            {
+
+                <!-- =============================================
+                     ADMIN LOGGED IN -> LOGOUT
+                ============================================== -->
+
+                using (Html.BeginForm(
+                    "Logout",
+                    "Admin",
+                    FormMethod.Post,
+                    new { @class = "admin-logout-form" }
+                ))
+                {
+
+                    @Html.AntiForgeryToken()
+
+
+                    <button type="submit"
+                            class="admin-logout-button"
+                            aria-label="Logout">
+
+                        <!-- Logout Icon -->
+
+                        <svg viewBox="0 0 24 24"
+                             aria-hidden="true">
+
+                            <path d="M9 5H5.8
+                                     C4.8 5 4 5.8 4 6.8
+                                     V17.2
+                                     C4 18.2 4.8 19 5.8 19
+                                     H9" />
+
+                            <path d="M13 8
+                                     L17 12
+                                     L13 16" />
+
+                            <path d="M17 12H9" />
+
+                        </svg>
+
+
+                        <span class="admin-tooltip">
+                            Logout
+                        </span>
+
+                    </button>
+
+                }
+
+            }
+            else
+            {
+
+                <!-- =============================================
+                     VISITOR -> ADMIN LOGIN
+                ============================================== -->
+
+                <a href="@Url.Action("Login", "Admin")"
+                   class="admin-icon-link"
+                   aria-label="Admin Login">
+
+                    <!-- Login Icon -->
+
+                    <svg viewBox="0 0 24 24"
+                         aria-hidden="true">
+
+                        <path d="M15 5H18.2
+                                 C19.2 5 20 5.8 20 6.8
+                                 V17.2
+                                 C20 18.2 19.2 19 18.2 19
+                                 H15" />
+
+                        <path d="M11 8
+                                 L15 12
+                                 L11 16" />
+
+                        <path d="M15 12H5" />
+
+                    </svg>
+
+
+                    <span class="admin-tooltip">
+                        Admin Login
+                    </span>
+
+                </a>
+
+            }
+
+
+        </div>
+
+
+    </aside>
+
+
+
+    <!-- =========================================================
+         PAGE CONTENT
+    ========================================================== -->
+
+    <main class="body-content">
+
+        @RenderBody()
+
+    </main>
+
+
+
+    @Scripts.Render("~/bundles/jquery")
+
+    @Scripts.Render("~/bundles/bootstrap")
+
+
+
+    <!-- =========================================================
+         SIDEBAR SCRIPT
+    ========================================================== -->
+
+    <script>
+
+        (function () {
+
+            var toggle =
+                document.getElementById("sidebarToggle");
+
+
+            if (!toggle) {
+                return;
+            }
+
+
+            toggle.addEventListener(
+                "click",
+                function () {
+
+
+                    document.body.classList.toggle(
+                        "sidebar-open"
+                    );
+
+
+                    var isOpen =
+                        document.body.classList.contains(
+                            "sidebar-open"
+                        );
+
+
+                    toggle.setAttribute(
+                        "aria-expanded",
+                        isOpen
+                            ? "true"
+                            : "false"
+                    );
+
+
+                    toggle.setAttribute(
+                        "aria-label",
+                        isOpen
+                            ? "Close navigation"
+                            : "Open navigation"
+                    );
+
+                }
+            );
+
+        })();
+
+    </script>
+
+
+    @RenderSection(
+        "scripts",
+        required: false
+    )
+
+
+</body>
+
+</html>
