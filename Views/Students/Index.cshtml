@@ -43,10 +43,7 @@
         && (bool)Session["IsAdmin"]; }
 
 <style>
-    /* =========================================================
-       STUDENTS PAGE
-       Same Aurelia scale and layout language as Teachers
-       ========================================================= */
+    /* STUDENTS PAGE Same Aurelia scale and layout language as Teachers */
 
     .students-page {
         width: 100%;
@@ -68,9 +65,7 @@
     }
 
 
-    /* =========================================================
-       HEADER
-       ========================================================= */
+    /* HEADER */
 
     .students-header {
         display: flex;
@@ -134,9 +129,7 @@
     }
 
 
-    /* =========================================================
-       TOOLBAR / FILTER
-       ========================================================= */
+    /* TOOLBAR / FILTER */
 
     .students-toolbar {
         margin: 34px 0 32px;
@@ -333,9 +326,7 @@
         }
 
 
-    /* =========================================================
-       STUDENT CARDS
-       ========================================================= */
+    /* STUDENT CARDS */
 
     .students-grid {
         display: grid;
@@ -526,9 +517,7 @@
     }
 
 
-    /* =========================================================
-       OVERLAY / PANELS
-       ========================================================= */
+    /* OVERLAY / PANELS */
 
     .student-overlay {
         position: fixed;
@@ -767,9 +756,7 @@
             }
 
 
-    /* =========================================================
-       FULL DETAILS
-       ========================================================= */
+    /* FULL DETAILS */
 
     .student-full-hero {
         position: relative;
@@ -944,9 +931,7 @@
     }
 
 
-    /* =========================================================
-       FORMS
-       ========================================================= */
+    /* FORMS */
 
     .student-form-grid {
         display: grid;
@@ -1062,9 +1047,7 @@
     }
 
 
-    /* =========================================================
-       RESPONSIVE
-       ========================================================= */
+    /* RESPONSIVE */
 
     @@media (max-width: 1050px) {
         .students-grid {
@@ -2674,9 +2657,7 @@ for (int i = 0; i < students.Count; i++)
     }
 
 
-    /* =========================================================
-       ADD MAJOR
-       ========================================================= */
+    /* ADD MAJOR */
 
     function updateAddStudentMajor() {
         var select =
@@ -2738,9 +2719,7 @@ for (int i = 0; i < students.Count; i++)
     }
 
 
-    /* =========================================================
-       EDIT MAJOR
-       ========================================================= */
+    /* EDIT MAJOR */
 
     function updateEditStudentMajor() {
         var select =
@@ -2873,9 +2852,7 @@ for (int i = 0; i < students.Count; i++)
     }
 
 
-    /* =========================================================
-       DELETE
-       ========================================================= */
+    /* DELETE */
 
     function openDeleteStudentPanel() {
         if (!studentAdminAccess) {
@@ -2910,9 +2887,7 @@ for (int i = 0; i < students.Count; i++)
     }
 
 
-    /* =========================================================
-       MAJOR EVENTS
-       ========================================================= */
+    /* MAJOR EVENTS */
 
     document
         .getElementById("addStudentMajorSelect")
@@ -2991,9 +2966,7 @@ for (int i = 0; i < students.Count; i++)
         );
 
 
-    /* =========================================================
-       FILTER MENU + MULTI CHECKBOX FILTERING
-       ========================================================= */
+    /* FILTER MENU + MULTI CHECKBOX FILTERING */
 
     (function () {
         var wrap =

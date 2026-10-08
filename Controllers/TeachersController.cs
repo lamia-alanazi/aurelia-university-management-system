@@ -12,9 +12,7 @@ namespace lamia12771.Controllers
         private SchoolContext db = new SchoolContext();
 
 
-        // =========================================================
-        // INDEX
-        // =========================================================
+        // Display teachers list
 
         public ActionResult Index()
         {
@@ -49,10 +47,7 @@ namespace lamia12771.Controllers
         }
 
 
-        // =========================================================
-        // SEED DEFAULT TEACHERS
-        // Only runs if Teachers table is empty
-        // =========================================================
+        // Add default teachers if the table is empty
 
         private void SeedTeachersIfEmpty()
         {
@@ -64,9 +59,7 @@ namespace lamia12771.Controllers
 
             db.Teachers.AddRange(new[]
             {
-                // =====================================================
-                // DR. SARA AL-HARBI
-                // =====================================================
+                // SARA AL-HARBI profile
 
                 new Teacher
                 {
@@ -113,9 +106,7 @@ namespace lamia12771.Controllers
                 },
 
 
-                // =====================================================
-                // DR. DANIEL FOSTER
-                // =====================================================
+                // DANIEL FOSTER profile
 
                 new Teacher
                 {
@@ -162,9 +153,7 @@ namespace lamia12771.Controllers
                 },
 
 
-                // =====================================================
-                // DR. EMMA COLLINS
-                // =====================================================
+                // EMMA COLLINS profile
 
                 new Teacher
                 {
@@ -210,9 +199,7 @@ namespace lamia12771.Controllers
                 },
 
 
-                // =====================================================
-                // DR. FAISAL AL-DOSARI
-                // =====================================================
+                // FAISAL AL-DOSARI profile
 
                 new Teacher
                 {
@@ -258,9 +245,7 @@ namespace lamia12771.Controllers
                 },
 
 
-                // =====================================================
-                // DR. NORA AL-ANAZI
-                // =====================================================
+                // NORA AL-ANAZI profile
 
                 new Teacher
                 {
@@ -306,9 +291,7 @@ namespace lamia12771.Controllers
                 },
 
 
-                // =====================================================
-                // DR. JAMES BENNETT
-                // =====================================================
+                // JAMES BENNETT profile
 
                 new Teacher
                 {
@@ -359,10 +342,7 @@ namespace lamia12771.Controllers
         }
 
 
-        // =========================================================
-        // RENAME ORIGINAL OLD SAMPLE TEACHERS
-        // Does not change user-created teachers
-        // =========================================================
+        // Update old sample teacher names
 
         private void RenameDefaultTeachers()
         {
@@ -460,10 +440,7 @@ namespace lamia12771.Controllers
         }
 
 
-        // =========================================================
-        // CHANGE THREE CURRENT DEFAULT NAMES
-        // Keeps Subject, Office, CV and ImagePath
-        // =========================================================
+        // Update selected teacher profiles
 
         private void RenameSelectedTeachersToInternational()
         {
@@ -722,15 +699,14 @@ namespace lamia12771.Controllers
             }
 
 
-            // إذا سبق وتحولت إلى Geography
-            // لا نعيد الكتابة فوق أي تعديلات مستقبلية
+            // Skip if the profile was already updated
             if (teacher.Subject == "Geography")
             {
                 return;
             }
 
 
-            // نحمي أي Teacher تم تعديل تخصصه يدويًا
+            // Keep manually updated teacher data
             if (teacher.Subject != "Business")
             {
                 return;
@@ -783,10 +759,7 @@ namespace lamia12771.Controllers
 
             db.SaveChanges();
         }
-        // =========================================================
-        // ADD DEFAULT OFFICES
-        // Only fills Office when it is empty
-        // =========================================================
+        // Add default office numbers
 
         private void AddDefaultOffices()
         {
@@ -914,19 +887,14 @@ namespace lamia12771.Controllers
         }
 
 
-        // =========================================================
-        // ADD DEFAULT CV / PROFILE INFORMATION
-        // Only fills fields that are currently empty
-        // =========================================================
+        // Add missing teacher profile information
 
         private void AddDefaultProfiles()
         {
             bool changed = false;
 
 
-            // =====================================================
-            // DR. SARA AL-HARBI
-            // =====================================================
+            // SARA AL-HARBI profile
 
             var teacher =
                 db.Teachers.FirstOrDefault(
@@ -1040,9 +1008,7 @@ namespace lamia12771.Controllers
             }
 
 
-            // =====================================================
-            // DR. DANIEL FOSTER
-            // =====================================================
+            // DANIEL FOSTER profile
 
             teacher =
                 db.Teachers.FirstOrDefault(
@@ -1156,9 +1122,7 @@ namespace lamia12771.Controllers
             }
 
 
-            // =====================================================
-            // DR. EMMA COLLINS
-            // =====================================================
+            // EMMA COLLINS profile
 
             teacher =
                 db.Teachers.FirstOrDefault(
@@ -1272,9 +1236,7 @@ namespace lamia12771.Controllers
             }
 
 
-            // =====================================================
-            // DR. FAISAL AL-DOSARI
-            // =====================================================
+            // FAISAL AL-DOSARI profile
 
             teacher =
                 db.Teachers.FirstOrDefault(
@@ -1388,9 +1350,7 @@ namespace lamia12771.Controllers
             }
 
 
-            // =====================================================
-            // DR. NORA AL-ANAZI
-            // =====================================================
+            // NORA AL-ANAZI profile
 
             teacher =
                 db.Teachers.FirstOrDefault(
@@ -1504,9 +1464,7 @@ namespace lamia12771.Controllers
             }
 
 
-            // =====================================================
-            // DR. JAMES BENNETT
-            // =====================================================
+            // JAMES BENNETT profile
 
             teacher =
                 db.Teachers.FirstOrDefault(
@@ -1631,9 +1589,7 @@ namespace lamia12771.Controllers
         }
 
 
-        // =========================================================
-        // DETAILS
-        // =========================================================
+        // Show teacher details
 
         public ActionResult Details(int? id)
         {
@@ -1659,9 +1615,7 @@ namespace lamia12771.Controllers
         }
 
 
-        // =========================================================
-        // CREATE
-        // =========================================================
+        // Add a new teacher
 
         [AdminOnly]
         public ActionResult Create()
@@ -1703,9 +1657,7 @@ namespace lamia12771.Controllers
         }
 
 
-        // =========================================================
-        // EDIT
-        // =========================================================
+        // Edit teacher information
 
         [AdminOnly]
         public ActionResult Edit(int? id)
@@ -1764,9 +1716,7 @@ namespace lamia12771.Controllers
         }
 
 
-        // =========================================================
-        // DELETE
-        // =========================================================
+        // Delete teacher record
 
         [AdminOnly]
         public ActionResult Delete(int? id)
@@ -1822,9 +1772,7 @@ namespace lamia12771.Controllers
         }
 
 
-        // =========================================================
-        // DISPOSE
-        // =========================================================
+        // Release database resources
 
         protected override void Dispose(
             bool disposing

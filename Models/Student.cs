@@ -48,7 +48,7 @@ namespace lamia12771.Models
         public string ImagePath { get; set; }
 
 
-        // Academic Advisor
+        // Link student with academic advisor
         [Display(Name = "Academic Advisor")]
         public int? TeacherId { get; set; }
 

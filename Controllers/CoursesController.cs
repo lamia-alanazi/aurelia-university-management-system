@@ -11,35 +11,25 @@ namespace lamia12771.Controllers
     {
         private SchoolContext db = new SchoolContext();
 
-
-        // =========================================================
-        // INDEX
-        // =========================================================
-
+        // Display courses list
         public ActionResult Index()
         {
-            // قائمة الدكاترة لاستخدامها في Add / Edit Course
+            // Load teachers for course creation and editing.
             ViewBag.Teachers =
                 db.Teachers
                   .OrderBy(t => t.Name)
                   .ToList();
 
-
-            // Include Teacher حتى نقدر نعرض اسم الدكتور المرتبط بالكورس
+            // Include teacher details when displaying courses.
             var courses =
                 db.Courses
                   .Include(c => c.Teacher)
                   .ToList();
 
-
             return View(courses);
         }
 
-
-        // =========================================================
-        // DETAILS
-        // =========================================================
-
+        // Show course details
         public ActionResult Details(int? id)
         {
             if (id == null)
@@ -49,27 +39,20 @@ namespace lamia12771.Controllers
                 );
             }
 
-
             Course course =
                 db.Courses
                   .Include(c => c.Teacher)
                   .FirstOrDefault(c => c.CourseId == id.Value);
-
 
             if (course == null)
             {
                 return HttpNotFound();
             }
 
-
             return View(course);
         }
 
-
-        // =========================================================
-        // CREATE
-        // =========================================================
-
+        // Add a new course
         [AdminOnly]
         public ActionResult Create()
         {
@@ -79,7 +62,6 @@ namespace lamia12771.Controllers
                     "TeacherId",
                     "Name"
                 );
-
 
             return View();
         }
@@ -102,10 +84,8 @@ namespace lamia12771.Controllers
 
                 db.SaveChanges();
 
-
                 return RedirectToAction("Index");
             }
-
 
             ViewBag.TeacherId =
                 new SelectList(
@@ -115,15 +95,10 @@ namespace lamia12771.Controllers
                     course.TeacherId
                 );
 
-
             return View(course);
         }
 
-
-        // =========================================================
-        // EDIT
-        // =========================================================
-
+        // Edit course information
         [AdminOnly]
         public ActionResult Edit(int? id)
         {
@@ -134,16 +109,13 @@ namespace lamia12771.Controllers
                 );
             }
 
-
             Course course =
                 db.Courses.Find(id);
-
 
             if (course == null)
             {
                 return HttpNotFound();
             }
-
 
             ViewBag.TeacherId =
                 new SelectList(
@@ -152,7 +124,6 @@ namespace lamia12771.Controllers
                     "Name",
                     course.TeacherId
                 );
-
 
             return View(course);
         }
@@ -174,13 +145,10 @@ namespace lamia12771.Controllers
                 db.Entry(course).State =
                     EntityState.Modified;
 
-
                 db.SaveChanges();
-
 
                 return RedirectToAction("Index");
             }
-
 
             ViewBag.TeacherId =
                 new SelectList(
@@ -190,15 +158,10 @@ namespace lamia12771.Controllers
                     course.TeacherId
                 );
 
-
             return View(course);
         }
 
-
-        // =========================================================
-        // DELETE
-        // =========================================================
-
+        // Delete course record
         [AdminOnly]
         public ActionResult Delete(int? id)
         {
@@ -209,18 +172,15 @@ namespace lamia12771.Controllers
                 );
             }
 
-
             Course course =
                 db.Courses
                   .Include(c => c.Teacher)
                   .FirstOrDefault(c => c.CourseId == id.Value);
 
-
             if (course == null)
             {
                 return HttpNotFound();
             }
-
 
             return View(course);
         }
@@ -236,37 +196,28 @@ namespace lamia12771.Controllers
                 return RedirectToAction("Index");
             }
 
-
             Course course =
                 db.Courses.Find(CourseId.Value);
-
 
             if (course == null)
             {
                 return HttpNotFound();
             }
 
-
             db.Courses.Remove(course);
 
             db.SaveChanges();
 
-
             return RedirectToAction("Index");
         }
 
-
-        // =========================================================
-        // DISPOSE
-        // =========================================================
-
+        // Release database resources
         protected override void Dispose(bool disposing)
         {
             if (disposing)
             {
                 db.Dispose();
             }
-
 
             base.Dispose(disposing);
         }

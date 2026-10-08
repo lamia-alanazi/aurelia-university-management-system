@@ -11,20 +11,17 @@ namespace lamia12771.Controllers
     {
         private SchoolContext db = new SchoolContext();
 
-
-        // =========================================================
-        // INDEX
-        // ADMIN ONLY
-        // =========================================================
-
+        // Display students list
         [AdminOnly]
         public ActionResult Index()
         {
+            // Load teachers for student information
             ViewBag.Teachers =
                 db.Teachers
                   .OrderBy(t => t.Name)
                   .ToList();
 
+            // Include teacher details with each student
             var students =
                 db.Students
                   .Include(s => s.Teacher)
@@ -34,12 +31,7 @@ namespace lamia12771.Controllers
             return View(students);
         }
 
-
-        // =========================================================
-        // DETAILS
-        // ADMIN ONLY
-        // =========================================================
-
+        // Show student details
         [AdminOnly]
         public ActionResult Details(int? id)
         {
@@ -65,12 +57,7 @@ namespace lamia12771.Controllers
             return View(student);
         }
 
-
-        // =========================================================
-        // CREATE
-        // ADMIN ONLY
-        // =========================================================
-
+        // Add a new student
         [AdminOnly]
         public ActionResult Create()
         {
@@ -118,12 +105,7 @@ namespace lamia12771.Controllers
             );
         }
 
-
-        // =========================================================
-        // EDIT
-        // ADMIN ONLY
-        // =========================================================
-
+        // Edit student information
         [AdminOnly]
         public ActionResult Edit(int? id)
         {
@@ -188,12 +170,7 @@ namespace lamia12771.Controllers
             );
         }
 
-
-        // =========================================================
-        // DELETE
-        // ADMIN ONLY
-        // =========================================================
-
+        // Delete student record
         [AdminOnly]
         public ActionResult Delete(int? id)
         {
@@ -239,11 +216,6 @@ namespace lamia12771.Controllers
 
             return RedirectToAction("Index");
         }
-
-
-        // =========================================================
-        // DISPOSE
-        // =========================================================
 
         protected override void Dispose(bool disposing)
         {

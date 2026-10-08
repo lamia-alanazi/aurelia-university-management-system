@@ -8,11 +8,7 @@ namespace lamia12771.Controllers
     {
         private readonly SchoolContext db = new SchoolContext();
 
-
-        // =========================================================
-        // CHECK ADMIN SESSION
-        // =========================================================
-
+        // Check if an admin session already exists
         private bool IsAdminLoggedIn()
         {
             return Session["IsAdmin"] != null
@@ -20,19 +16,11 @@ namespace lamia12771.Controllers
                 && (bool)Session["IsAdmin"];
         }
 
-
-        // =========================================================
-        // LOGIN - GET
-        // =========================================================
-
+        // Display admin login page
         [HttpGet]
         public ActionResult Login()
         {
-            /*
-             * إذا الأدمن مسجل دخول بالفعل
-             * نرجعه للصفحة الرئيسية.
-             */
-
+            // Redirect logged-in admins to the home page.
             if (IsAdminLoggedIn())
             {
                 return RedirectToAction(
@@ -46,11 +34,7 @@ namespace lamia12771.Controllers
             );
         }
 
-
-        // =========================================================
-        // LOGIN - POST
-        // =========================================================
-
+        // Handle admin login request
         [HttpPost]
         [ValidateAntiForgeryToken]
         public ActionResult Login(AdminLoginViewModel model)
@@ -60,26 +44,14 @@ namespace lamia12771.Controllers
                 return View(model);
             }
 
-
             string username =
                 model.Username.Trim();
 
-
-            /*
-             * البحث عن حساب الأدمن الموجود مسبقاً
-             * في قاعدة البيانات.
-             */
-
+            // Find the admin account in the database.
             Admin admin =
                 db.Admins.FirstOrDefault(
                     a => a.Username == username
                 );
-
-
-            /*
-             * نفس الرسالة سواء كان اسم المستخدم
-             * أو كلمة المرور غير صحيحة.
-             */
 
             if (admin == null)
             {
@@ -91,7 +63,6 @@ namespace lamia12771.Controllers
                 return View(model);
             }
 
-
             bool passwordIsCorrect =
                 PasswordHasher.VerifyPassword(
                     model.Password,
@@ -99,9 +70,9 @@ namespace lamia12771.Controllers
                     admin.PasswordSalt
                 );
 
-
             if (!passwordIsCorrect)
             {
+                // Keep the same message for invalid username or password.
                 ModelState.AddModelError(
                     "",
                     "Invalid username or password."
@@ -110,11 +81,7 @@ namespace lamia12771.Controllers
                 return View(model);
             }
 
-
-            // =====================================================
-            // LOGIN SUCCESS
-            // =====================================================
-
+            // Create admin session after successful login
             Session.Clear();
 
             Session["IsAdmin"] = true;
@@ -122,18 +89,13 @@ namespace lamia12771.Controllers
             Session["AdminUsername"] =
                 admin.Username;
 
-
             return RedirectToAction(
                 "Index",
                 "Home"
             );
         }
 
-
-        // =========================================================
-        // LOGOUT
-        // =========================================================
-
+        // Logout current admin
         [HttpPost]
         [ValidateAntiForgeryToken]
         public ActionResult Logout()
@@ -142,18 +104,13 @@ namespace lamia12771.Controllers
 
             Session.Abandon();
 
-
             return RedirectToAction(
                 "Index",
                 "Home"
             );
         }
 
-
-        // =========================================================
-        // DISPOSE
-        // =========================================================
-
+        // Release database resources
         protected override void Dispose(bool disposing)
         {
             if (disposing)

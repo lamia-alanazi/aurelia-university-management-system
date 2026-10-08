@@ -42,20 +42,11 @@ namespace lamia12771.Models
         public string ImagePath { get; set; }
 
 
-        // =========================================================
-        // OLD INSTRUCTOR FIELD
-        // Keep temporarily so existing course data is not affected
-        // =========================================================
-
+        // Kept for compatibility with existing course data
         public string Instructor { get; set; }
 
 
-        // =========================================================
-        // TEACHER RELATION
-        // One Course -> One Teacher
-        // One Teacher -> Many Courses
-        // =========================================================
-
+        // Course and teacher relationship
         [Display(Name = "Instructor")]
         public int? TeacherId { get; set; }
 

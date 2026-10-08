@@ -11,13 +11,13 @@ namespace lamia12771.Controllers
     {
         private SchoolContext db = new SchoolContext();
 
-        // GET: Rooms
+        // Display rooms list
         public ActionResult Index()
         {
             return View(db.Rooms.ToList());
         }
 
-        // GET: Rooms/Details/5
+        // Show room details
         public ActionResult Details(int? id)
         {
             if (id == null)
@@ -37,14 +37,13 @@ namespace lamia12771.Controllers
             return View(room);
         }
 
-        // GET: Rooms/Create
+        // Add a new room
         [AdminOnly]
         public ActionResult Create()
         {
             return View();
         }
 
-        // POST: Rooms/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
         [AdminOnly]
@@ -64,7 +63,7 @@ namespace lamia12771.Controllers
             return View(room);
         }
 
-        // GET: Rooms/Edit/5
+        // Edit room information
         [AdminOnly]
         public ActionResult Edit(int? id)
         {
@@ -85,7 +84,6 @@ namespace lamia12771.Controllers
             return View(room);
         }
 
-        // POST: Rooms/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
         [AdminOnly]
@@ -104,12 +102,11 @@ namespace lamia12771.Controllers
                 return RedirectToAction("Index");
             }
 
-            // حتى لو صار Validation Error
-            // نرجع إلى Rooms بدل صفحة Edit القديمة
+            // Return to rooms list if validation fails
             return RedirectToAction("Index");
         }
 
-        // GET: Rooms/Delete/5
+        // Delete room record
         [AdminOnly]
         public ActionResult Delete(int? id)
         {
@@ -130,7 +127,6 @@ namespace lamia12771.Controllers
             return View(room);
         }
 
-        // POST: Rooms/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         [AdminOnly]
@@ -147,6 +143,7 @@ namespace lamia12771.Controllers
             return RedirectToAction("Index");
         }
 
+        // Release database resources
         protected override void Dispose(
             bool disposing)
         {
